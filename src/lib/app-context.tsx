@@ -1,35 +1,17 @@
-// ─────────────────────────────────────────────────────────────────────────────
-// VitalOS — App-level context: screen routing, mode, wallet state
-// ─────────────────────────────────────────────────────────────────────────────
 import { createContext, useContext, useState, type ReactNode } from 'react'
 import type { AppMode } from '../types/yieldos'
 import type { Lang } from './i18n'
+import { useAccount, useConnect, useDisconnect } from 'wagmi'
 
-export type Screen =
-  | 'onboarding'
-  | 'overview'
-  | 'portfolio'
-  | 'discover'
-  | 'optimise'
-  | 'scenario'
-  | 'guard'
-  | 'passport'
-  | 'mandate'
-  | 'settings'
+export type Screen = 'onboarding' | 'overview' | 'portfolio' | 'discover' | 'optimise' | 'scenario' | 'guard' | 'passport' | 'mandate' | 'settings'
 
 interface AppCtx {
-  screen: Screen
-  setScreen: (s: Screen) => void
-  mode: AppMode
-  setMode: (m: AppMode) => void
-  lang: Lang
-  setLang: (l: Lang) => void
-  walletConnected: boolean
-  walletAddress: string
-  connectWallet: () => void
-  disconnectWallet: () => void
-  onboardingComplete: boolean
-  completeOnboarding: () => void
+  screen: Screen; setScreen: (s: Screen) => void
+  mode: AppMode; setMode: (m: AppMode) => void
+  lang: Lang; setLang: (l: Lang) => void
+  walletConnected: boolean; walletAddress: string
+  connectWallet: () => void; disconnectWallet: () => void
+  onboardingComplete: boolean; completeOnboarding: () => void
 }
 
 const Ctx = createContext<AppCtx | null>(null)
@@ -38,39 +20,28 @@ export function AppProvider({ children }: { children: ReactNode }) {
   const [screen, setScreen] = useState<Screen>('onboarding')
   const [mode, setMode] = useState<AppMode>('beginner')
   const [lang, setLang] = useState<Lang>('en')
-  const [walletConnected, setWalletConnected] = useState(false)
-  const [walletAddress, setWalletAddress] = useState('')
   const [onboardingComplete, setOnboardingComplete] = useState(false)
+  const { address, isConnected } = useAccount()
+  const { connect, connectors } = useConnect()
+  const { disconnect } = useDisconnect()
 
   function connectWallet() {
-    // Non-custodial: real implementation uses wagmi/WalletConnect
-    // For now, simulates connection with a demo address (clearly labelled)
-    setWalletAddress('0xDEMO...0000')
-    setWalletConnected(true)
+    const connector = connectors.find((item) => item.id === 'injected') ?? connectors[0]
+    if (connector) connect({ connector })
   }
 
-  function disconnectWallet() {
-    setWalletAddress('')
-    setWalletConnected(false)
-  }
+  function disconnectWallet() { disconnect() }
 
   function completeOnboarding() {
     setOnboardingComplete(true)
     setScreen('overview')
   }
 
-  return (
-    <Ctx.Provider value={{
-      screen, setScreen,
-      mode, setMode,
-      lang, setLang,
-      walletConnected, walletAddress,
-      connectWallet, disconnectWallet,
-      onboardingComplete, completeOnboarding,
-    }}>
-      {children}
-    </Ctx.Provider>
-  )
+  return <Ctx.Provider value={{
+    screen, setScreen, mode, setMode, lang, setLang,
+    walletConnected: isConnected, walletAddress: address ?? '',
+    connectWallet, disconnectWallet, onboardingComplete, completeOnboarding,
+  }}>{children}</Ctx.Provider>
 }
 
 export function useApp(): AppCtx {

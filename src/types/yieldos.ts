@@ -41,8 +41,10 @@ export type BookingStatus =
 export interface DataMeta {
   timestamp: number          // unix ms
   provider: string
+  source: string
   confidence: DataConfidence
   isDemo: boolean
+  methodology: string
 }
 
 // ── Yield DNA ─────────────────────────────────────────────────────────────────

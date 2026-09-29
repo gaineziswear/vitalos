@@ -1,5 +1,3 @@
-import type { YieldDNA } from '../../types/yieldos'
-
 export const YIELD_METHODOLOGY_VERSION = 'v1.0.0'
 
 /** Estimated net yield before user-specific gas/slippage. Never a guaranteed return. */
@@ -15,7 +13,7 @@ export function estimateNetYield(input: {
   return Math.max(0, gross - fees - borrowing)
 }
 
-export function incentiveDependency(y: YieldDNA): 'LOW' | 'MEDIUM' | 'HIGH' | 'CRITICAL' {
-  const ratio = y.grossYield > 0 ? Math.max(0, y.incentiveYield) / y.grossYield : 0
+export function incentiveDependency(grossYield: number, incentiveYield: number): 'LOW' | 'MEDIUM' | 'HIGH' | 'CRITICAL' {
+  const ratio = grossYield > 0 ? Math.max(0, incentiveYield) / grossYield : 0
   return ratio > 0.7 ? 'CRITICAL' : ratio > 0.4 ? 'HIGH' : ratio > 0.2 ? 'MEDIUM' : 'LOW'
 }

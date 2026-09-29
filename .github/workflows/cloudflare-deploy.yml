@@ -12,7 +12,6 @@ jobs:
   deploy:
     runs-on: ubuntu-latest
     timeout-minutes: 30
-    environment: production
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -27,23 +26,6 @@ jobs:
 
       - name: Build production assets
         run: npm run build
-
-      - name: Verify Cloudflare credentials are present
-        shell: bash
-        env:
-          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
-          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
-        run: |
-          if [ -z "$CLOUDFLARE_API_TOKEN" ]; then
-            echo "::error::CLOUDFLARE_API_TOKEN secret is missing. Please configure it in repository settings."
-            exit 1
-          fi
-          if [ -z "$CLOUDFLARE_ACCOUNT_ID" ]; then
-            echo "::error::CLOUDFLARE_ACCOUNT_ID secret is missing. Please configure it in repository settings."
-            echo "::notice::Get CLOUDFLARE_ACCOUNT_ID from: https://dash.cloudflare.com/"
-            exit 1
-          fi
-          echo "✓ Cloudflare credentials verified (values are not printed)"
 
       - name: Deploy to Cloudflare Workers
         uses: cloudflare/wrangler-action@v3

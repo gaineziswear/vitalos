@@ -6,6 +6,7 @@ import {
   Shield, Fingerprint, Settings, AlertTriangle, Activity,
 } from 'lucide-react'
 import type { GuardAlert } from '../../types/yieldos'
+import { UserMenu } from '../auth/UserMenu'
 
 interface Props { alerts: GuardAlert[] }
 
@@ -183,6 +184,11 @@ export function Sidebar({ alerts }: Props) {
             <AlertTriangle size={11} className="ml-auto opacity-70" />
           </button>
         )}
+
+        {/* User menu */}
+        <div className="pt-1">
+          <UserMenu />
+        </div>
       </div>
     </aside>
   )

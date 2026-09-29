@@ -1,6 +1,7 @@
 import { useApp } from '../../lib/app-context'
 import { cn } from '../../lib/utils'
 import { Activity } from 'lucide-react'
+import { UserMenu } from '../auth/UserMenu'
 
 // ── VitalOS logo mark (mobile) ──────────────────────────────────────────────
 function VitalMark({ size = 26 }: { size?: number }) {
@@ -57,6 +58,9 @@ export function TopBar() {
               Connect
             </button>
           )}
+
+          {/* Auth */}
+          <UserMenu />
         </div>
       </div>
     </header>

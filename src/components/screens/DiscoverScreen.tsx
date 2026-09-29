@@ -1,14 +1,14 @@
 import { useState, useMemo } from 'react'
 import { useT } from '../../lib/i18n'
 import { useApp } from '../../lib/app-context'
-import { DEMO_OPPORTUNITIES } from '../../lib/demo-data'
 import { fmtUsd, fmtCompact, lockupLabel, cn } from '../../lib/utils'
 import { RiskBadge } from '../ui/RiskBadge'
 import { YieldPill } from '../ui/YieldPill'
 import { DataFreshness } from '../ui/DataFreshness'
 import { DemoBadge } from '../ui/DemoBadge'
 import { RiskMeter } from '../ui/RiskMeter'
-import { Filter, AlertCircle, ChevronRight, BarChart2 } from 'lucide-react'
+import { useOpportunities } from '../../hooks/useOpportunities'
+import { Filter, AlertCircle, ChevronRight, BarChart2, RefreshCw, Wifi, WifiOff } from 'lucide-react'
 import type { Opportunity } from '../../types/yieldos'
 
 type FilterKey = 'all' | 'lending' | 'lp' | 'staking' | 'liquid_staking' | 'vault' | 'fixed_rate'
@@ -22,6 +22,11 @@ export function DiscoverScreen() {
   const [selected, setSelected] = useState<Opportunity | null>(null)
   const [viewMode, setViewMode] = useState<'list' | 'map'>('list')
 
+  const {
+    opportunities, dataMode, freshnessLabel: freshLabel,
+    count, error, refetch,
+  } = useOpportunities({ minTvl: 1_000_000, limit: 200 })
+
   const filters: { id: FilterKey; label: string }[] = [
     { id: 'all',            label: 'All' },
     { id: 'lending',        label: 'Lending' },
@@ -32,17 +37,44 @@ export function DiscoverScreen() {
   ]
 
   const filtered = useMemo(() =>
-    DEMO_OPPORTUNITIES.filter(o =>
+    opportunities.filter(o =>
       (filter === 'all' || o.strategyType === filter) &&
       o.risk.overall <= maxRisk &&
       o.yieldDNA.estimatedNetYield >= minNet,
     ).sort((a, b) => b.yieldDNA.estimatedNetYield - a.yieldDNA.estimatedNetYield),
-    [filter, maxRisk, minNet],
+    [opportunities, filter, maxRisk, minNet],
   )
 
   return (
     <div className="max-w-4xl mx-auto px-4 py-6 pb-24 lg:pb-8">
-      <DemoBadge />
+      {/* ── Data source status bar ── */}
+      {dataMode === 'demo' && <DemoBadge />}
+      {dataMode === 'live' && (
+        <div className="flex items-center gap-2 mb-4 px-3 py-2 rounded-lg bg-mint-500/6 border border-mint-500/15">
+          <Wifi size={12} className="text-mint-400 shrink-0" />
+          <span className="text-[11px] text-ink-secondary">
+            Live data · DeFiLlama · {count.toLocaleString()} pools · {freshLabel}
+          </span>
+          <button onClick={refetch} className="ml-auto text-ink-muted hover:text-ink-primary transition-colors" aria-label="Refresh">
+            <RefreshCw size={11} />
+          </button>
+        </div>
+      )}
+      {dataMode === 'loading' && (
+        <div className="flex items-center gap-2 mb-4 px-3 py-2 rounded-lg bg-surface-raised border border-surface-border">
+          <RefreshCw size={12} className="text-ink-muted shrink-0 animate-spin" />
+          <span className="text-[11px] text-ink-muted">Fetching live opportunities from DeFiLlama…</span>
+        </div>
+      )}
+      {dataMode === 'error' && (
+        <div className="flex items-center gap-2 mb-4 px-3 py-2 rounded-lg bg-amber-500/6 border border-amber-500/20">
+          <WifiOff size={12} className="text-amber-400 shrink-0" />
+          <span className="text-[11px] text-amber-300">Live data unavailable — showing demo data. {error ?? ''}</span>
+          <button onClick={refetch} className="ml-auto text-amber-400 hover:text-amber-300 transition-colors text-[11px] font-semibold">
+            Retry
+          </button>
+        </div>
+      )}
 
       <div className="flex items-center justify-between mb-5 mt-2">
         <div>

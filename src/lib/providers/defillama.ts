@@ -4,6 +4,9 @@
 // All data is labelled with source + timestamp.
 // Never present stale or unavailable data as live.
 
+import { INTELLIGENCE_METHODOLOGY_VERSION } from '../intelligence/provenance'
+import { aggregateRisk } from '../intelligence/risk-engine'
+import { estimateNetYield, incentiveDependency } from '../intelligence/yield-engine'
 import type {
   Opportunity, YieldDNA, YieldBreakdown, RiskProfile,
   SmartContractRisk, LiquidityRisk, MarketRisk, StablecoinRisk,
@@ -91,10 +94,12 @@ function chainId(chain: string): number {
 
 function meta(fetchedAt: number, confidence = 0.8): DataMeta {
   return {
-    timestamp:  fetchedAt,
-    provider:   'DeFiLlama',
+    timestamp: fetchedAt,
+    provider: 'DeFiLlama',
+    source: 'https://yields.llama.fi/pools',
     confidence: confidence >= 0.8 ? 'high' : confidence >= 0.5 ? 'medium' : 'low',
-    isDemo:     false,
+    isDemo: false,
+    methodology: INTELLIGENCE_METHODOLOGY_VERSION,
   }
 }
 
@@ -105,7 +110,7 @@ function buildYieldDNA(pool: LlamaPool, fetchedAt: number): YieldDNA {
   const incentiveYield   = pool.apyReward ?? 0
   const organicYield     = pool.apyBase   ?? 0
   const sustainableYield = organicYield
-  const estimatedNetYield = Math.max(0, grossYield - 0.1)
+  const estimatedNetYield = estimateNetYield({ grossYield, protocolFees: 0.1, borrowingCosts: 0 })
   const incentiveDep     = grossYield > 0 ? incentiveYield / grossYield : 0
 
   const breakdown: YieldBreakdown = {
@@ -116,7 +121,7 @@ function buildYieldDNA(pool: LlamaPool, fetchedAt: number): YieldDNA {
     other:             0,
     advertised:        grossYield,
     sustainable:       sustainableYield,
-    incentiveDependency: incentiveDep > 0.7 ? 'CRITICAL' : incentiveDep > 0.4 ? 'HIGH' : incentiveDep > 0.2 ? 'MEDIUM' : 'LOW',
+    incentiveDependency: incentiveDependency({ grossYield, incentiveYield, sustainableYield, breakdown: undefined as never } as YieldDNA),
     classes:           incentiveDep > 0.4 ? ['D', 'E'] : organicYield > 0 ? ['A', 'B'] : ['F'],
   }
 
@@ -204,9 +209,11 @@ function buildRisk(pool: LlamaPool, fetchedAt: number): RiskProfile {
      stable.score * 0.1 + oracle.score * 0.1 + gov.score * 0.05 + bridge.score * 0.05)
   )
 
+  const aggregate = aggregateRisk({ smartContract: sc, liquidity: liq, market: mkt, stablecoin: stable, oracle, governance: gov, bridge, concentrationRisk: tvl < 500_000 ? 70 : tvl < 5_000_000 ? 40 : 20, meta: meta(fetchedAt, 0.45) })
+
   return {
-    overall:          overallScore,
-    level:            overallScore > 70 ? 'critical' : overallScore > 50 ? 'high' : overallScore > 30 ? 'moderate' : 'low',
+    overall: aggregate.overall,
+    level: aggregate.level,
     smartContract:    sc,
     liquidity:        liq,
     market:           mkt,

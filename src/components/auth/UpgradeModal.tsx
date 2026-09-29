@@ -213,7 +213,9 @@ function TierCard({
 // ── Main modal ────────────────────────────────────────────────────────────────
 export function UpgradeModal({ open, onClose, targetTier }: UpgradeModalProps) {
   const { effectiveTier, profile } = useAuth()
-  const [payMethod, setPayMethod]  = useState<PayMethod>('web3')
+  // Default to fiat — Lemon Squeezy is live. Web3/Unlock tab shown once locks are deployed.
+  const anyLockDeployed = (['validator','staker','architect'] as Tier[]).some(t => !!getLockAddress(t))
+  const [payMethod, setPayMethod]  = useState<PayMethod>(anyLockDeployed ? 'web3' : 'fiat')
 
   if (!open) return null
 
@@ -254,19 +256,21 @@ export function UpgradeModal({ open, onClose, targetTier }: UpgradeModalProps) {
             </button>
           </div>
 
-          {/* Payment method toggle */}
+          {/* Payment method toggle — Web3 tab only shown once Unlock locks are deployed */}
           <div className="flex items-center gap-1 mt-4 bg-surface-muted rounded-lg p-1 w-fit">
-            <button
-              onClick={() => setPayMethod('web3')}
-              className={cn(
-                'flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-semibold transition-colors',
-                payMethod === 'web3'
-                  ? 'bg-surface-card text-mint-400 shadow-sm'
-                  : 'text-ink-muted hover:text-ink-secondary',
-              )}
-            >
-              <Wallet size={11} /> Web3 / USDC
-            </button>
+            {anyLockDeployed && (
+              <button
+                onClick={() => setPayMethod('web3')}
+                className={cn(
+                  'flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-semibold transition-colors',
+                  payMethod === 'web3'
+                    ? 'bg-surface-card text-mint-400 shadow-sm'
+                    : 'text-ink-muted hover:text-ink-secondary',
+                )}
+              >
+                <Wallet size={11} /> Web3 / USDC
+              </button>
+            )}
             <button
               onClick={() => setPayMethod('fiat')}
               className={cn(

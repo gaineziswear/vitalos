@@ -71,9 +71,11 @@ body {
   }
   .btn-danger {
     @apply inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl
-           bg-red-500/10 border border-red-500/20 text-red-400 font-semibold text-sm
-           hover:bg-red-500/20 transition-all duration-100;
+           text-red-400 font-semibold text-sm transition-all duration-100;
+    background: rgba(239,68,68,.10);
+    border: 1px solid rgba(239,68,68,.20);
   }
+  .btn-danger:hover { background: rgba(239,68,68,.20); }
 
   /* ── Cards ── */
   .card {
@@ -83,15 +85,18 @@ body {
     @apply bg-surface-overlay rounded-2xl border border-surface-border shadow-card;
   }
   .card-accent {
-    @apply rounded-2xl border border-mint-500/20 shadow-glow-mint-sm;
+    @apply rounded-2xl shadow-glow-mint-sm;
+    border: 1px solid rgba(13,191,134,.20);
     background: linear-gradient(135deg, rgba(13,191,134,.06) 0%, rgba(14,18,18,.8) 60%);
   }
   .card-warn {
-    @apply rounded-xl border border-amber-500/25;
+    @apply rounded-xl;
+    border: 1px solid rgba(245,158,11,.25);
     background: rgba(245,158,11,.06);
   }
   .card-danger {
-    @apply rounded-xl border border-red-500/20;
+    @apply rounded-xl;
+    border: 1px solid rgba(239,68,68,.20);
     background: rgba(239,68,68,.06);
   }
 
@@ -127,7 +132,8 @@ body {
            hover:text-ink-primary hover:bg-surface-muted;
   }
   .nav-item-active {
-    @apply bg-mint-500/8 text-ink-primary;
+    @apply text-ink-primary;
+    background: rgba(13,191,134,.08);
   }
   .nav-active-bar {
     @apply absolute left-0 top-1/2 -translate-y-1/2 w-0.5 h-5 rounded-r-full bg-mint-500;
@@ -139,16 +145,19 @@ body {
            bg-surface-overlay border border-surface-border text-ink-secondary;
   }
   .chip-mint {
-    @apply inline-flex items-center px-2 py-0.5 rounded-md text-[11px] font-semibold
-           bg-mint-500/10 border border-mint-500/20 text-mint-400;
+    @apply inline-flex items-center px-2 py-0.5 rounded-md text-[11px] font-semibold text-mint-400;
+    background: rgba(13,191,134,.10);
+    border: 1px solid rgba(13,191,134,.20);
   }
   .chip-amber {
-    @apply inline-flex items-center px-2 py-0.5 rounded-md text-[11px] font-semibold
-           bg-amber-500/10 border border-amber-500/20 text-amber-400;
+    @apply inline-flex items-center px-2 py-0.5 rounded-md text-[11px] font-semibold text-amber-400;
+    background: rgba(245,158,11,.10);
+    border: 1px solid rgba(245,158,11,.20);
   }
   .chip-red {
-    @apply inline-flex items-center px-2 py-0.5 rounded-md text-[11px] font-semibold
-           bg-red-500/10 border border-red-500/20 text-red-400;
+    @apply inline-flex items-center px-2 py-0.5 rounded-md text-[11px] font-semibold text-red-400;
+    background: rgba(239,68,68,.10);
+    border: 1px solid rgba(239,68,68,.20);
   }
 
   /* ── Table row ── */
@@ -184,12 +193,14 @@ body {
 
   /* ── Yield/Risk pills ── */
   .yield-pill-high {
-    @apply inline-flex items-center gap-1 px-2 py-1 rounded-lg text-xs font-bold tabular
-           bg-mint-500/10 border border-mint-500/20 text-mint-400;
+    @apply inline-flex items-center gap-1 px-2 py-1 rounded-lg text-xs font-bold tabular text-mint-400;
+    background: rgba(13,191,134,.10);
+    border: 1px solid rgba(13,191,134,.20);
   }
   .yield-pill-mid {
-    @apply inline-flex items-center gap-1 px-2 py-1 rounded-lg text-xs font-bold tabular
-           bg-amber-500/10 border border-amber-500/20 text-amber-400;
+    @apply inline-flex items-center gap-1 px-2 py-1 rounded-lg text-xs font-bold tabular text-amber-400;
+    background: rgba(245,158,11,.10);
+    border: 1px solid rgba(245,158,11,.20);
   }
   .yield-pill-low {
     @apply inline-flex items-center gap-1 px-2 py-1 rounded-lg text-xs font-bold tabular
@@ -201,8 +212,9 @@ body {
 
   /* ── Demo badge ── */
   .demo-badge {
-    @apply inline-flex items-center gap-1.5 px-2 py-1 rounded-md text-[10px] font-semibold uppercase
-           bg-amber-500/8 border border-amber-500/15 text-amber-400;
+    @apply inline-flex items-center gap-1.5 px-2 py-1 rounded-md text-[10px] font-semibold uppercase text-amber-400;
+    background: rgba(245,158,11,.08);
+    border: 1px solid rgba(245,158,11,.15);
     letter-spacing: 0.06em;
   }
 

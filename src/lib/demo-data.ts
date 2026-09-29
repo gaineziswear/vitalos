@@ -15,8 +15,10 @@ const NOW = Date.now()
 const demoMeta = (provider = 'DEMO'): DataMeta => ({
   timestamp: NOW,
   provider,
+  source: 'demo-data',
   confidence: 'low',
   isDemo: true,
+  methodology: 'v1.0.0',
 })
 
 // ── Demo Capital Mandate ──────────────────────────────────────────────────────

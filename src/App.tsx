@@ -1,6 +1,8 @@
+import { useState } from 'react'
 import { AppProvider, useApp } from './lib/app-context'
 import { I18nCtx, translations } from './lib/i18n'
 import { DEMO_ALERTS } from './lib/demo-data'
+import { LandingPage } from './components/landing/LandingPage'
 
 // Layout
 import { Sidebar } from './components/layout/Sidebar'
@@ -69,6 +71,12 @@ function SettingsPlaceholder() {
 }
 
 export default function App() {
+  const [showApp, setShowApp] = useState(false)
+
+  if (!showApp) {
+    return <LandingPage onLaunchApp={() => setShowApp(true)} />
+  }
+
   return (
     <AppProvider>
       <AppShell />

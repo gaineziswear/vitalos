@@ -121,7 +121,7 @@ function buildYieldDNA(pool: LlamaPool, fetchedAt: number): YieldDNA {
     other:             0,
     advertised:        grossYield,
     sustainable:       sustainableYield,
-    incentiveDependency: incentiveDependency({ grossYield, incentiveYield, sustainableYield, breakdown: undefined as never } as YieldDNA),
+    incentiveDependency: incentiveDependency(grossYield, incentiveYield),
     classes:           incentiveDep > 0.4 ? ['D', 'E'] : organicYield > 0 ? ['A', 'B'] : ['F'],
   }
 

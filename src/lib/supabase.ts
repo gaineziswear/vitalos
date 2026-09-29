@@ -1,8 +1,19 @@
 import { createClient } from '@supabase/supabase-js'
 import type { Database } from './database.types'
 
-const supabaseUrl  = import.meta.env.VITE_SUPABASE_URL  as string
-const supabaseAnon = import.meta.env.VITE_SUPABASE_ANON_KEY as string
+// Read from runtime injection (Docker Space) or build-time env (dev/static)
+declare global {
+  interface Window {
+    __env__?: Record<string, string>
+  }
+}
+const env = (key: string) =>
+  (typeof window !== 'undefined' && window.__env__?.[key]) ||
+  (import.meta.env[key] as string | undefined) ||
+  ''
+
+const supabaseUrl  = env('VITE_SUPABASE_URL')
+const supabaseAnon = env('VITE_SUPABASE_ANON_KEY')
 
 if (!supabaseUrl || !supabaseAnon) {
   console.warn('[VitalOS] Supabase env vars missing — auth features disabled.')

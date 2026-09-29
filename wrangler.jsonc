@@ -1,20 +1,16 @@
 {
   "$schema": "node_modules/wrangler/config-schema.json",
   "name": "vitalos-web",
+  "main": "src/worker.ts",
   "compatibility_date": "2026-09-29",
   "assets": {
     "directory": "./dist",
+    "binding": "ASSETS",
     "not_found_handling": "single-page-application"
   },
   "routes": [
-    {
-      "pattern": "vitalos.space",
-      "custom_domain": true
-    },
-    {
-      "pattern": "www.vitalos.space",
-      "custom_domain": true
-    }
+    { "pattern": "vitalos.space", "custom_domain": true },
+    { "pattern": "www.vitalos.space", "custom_domain": true }
   ],
   "build": {
     "command": "npm run build"

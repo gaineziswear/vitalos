@@ -1,34 +1,29 @@
 // ── VitalOS — Lemon Squeezy integration ──────────────────────────────────────
 // Fiat subscription checkout via Lemon Squeezy (works from Mauritius).
-// No backend required — users are redirected to a hosted checkout page.
-// Set up products at app.lemonsqueezy.com and paste variant IDs below.
+// Uses direct hosted checkout URLs — no store slug or variant ID needed.
+// Set checkout URLs from app.lemonsqueezy.com → Products → Share → Checkout link.
 
 import type { Tier } from '@/lib/database.types'
 
-// ── Variant IDs — SET THESE after creating products in Lemon Squeezy ─────────
-// Go to app.lemonsqueezy.com → Products → Create product for each tier.
-// Copy the Variant ID from each product's URL or settings panel.
 const e = (k: string): string => (import.meta.env[k] as string | undefined) ?? ''
 
-const LEMON_VARIANT_IDS: Partial<Record<Tier, string>> = {
-  validator: e('VITE_LEMON_VARIANT_VALIDATOR'),
-  staker:    e('VITE_LEMON_VARIANT_STAKER'),
-  architect: e('VITE_LEMON_VARIANT_ARCHITECT'),
-  protocol:  e('VITE_LEMON_VARIANT_PROTOCOL'),
+// ── Direct checkout URLs per tier ────────────────────────────────────────────
+const LEMON_CHECKOUT_URLS: Partial<Record<Tier, string>> = {
+  validator: e('VITE_LEMON_URL_VALIDATOR'),
+  staker:    e('VITE_LEMON_URL_STAKER'),
+  architect: e('VITE_LEMON_URL_ARCHITECT'),
 }
-
-// ── Store slug — your Lemon Squeezy store handle ──────────────────────────────
-const LEMON_STORE: string = e('VITE_LEMON_STORE_SLUG') || 'vitalos'
 
 // ── Typed accessor ────────────────────────────────────────────────────────────
-function getVariantId(tier: Tier): string | undefined {
-  const ids: Partial<Record<Tier, string>> = LEMON_VARIANT_IDS
-  return Object.prototype.hasOwnProperty.call(ids, tier)
-    ? ids[tier]
+function getCheckoutUrl(tier: Tier): string | undefined {
+  const urls: Partial<Record<Tier, string>> = LEMON_CHECKOUT_URLS
+  const url = Object.prototype.hasOwnProperty.call(urls, tier)
+    ? urls[tier]
     : undefined
+  return url || undefined
 }
 
-// ── Build a hosted checkout URL for a given tier ─────────────────────────────
+// ── Build checkout URL with optional prefill params ───────────────────────────
 export function getLemonCheckoutUrl(
   tier: Tier,
   options?: {
@@ -37,28 +32,19 @@ export function getLemonCheckoutUrl(
     redirect?: string
   }
 ): string | null {
-  const variantId = getVariantId(tier)
-  if (!variantId) return null
+  const base = getCheckoutUrl(tier)
+  if (!base) return null
 
   const params = new URLSearchParams()
-
-  // Pre-fill checkout with user email if available
-  if (options?.email)  params.set('checkout[email]', options.email)
-
-  // Pass user ID as custom data so webhook can link payment to account
-  if (options?.userId) params.set('checkout[custom][user_id]', options.userId)
-
-  // Success redirect
+  if (options?.email)    params.set('checkout[email]', options.email)
+  if (options?.userId)   params.set('checkout[custom][user_id]', options.userId)
   if (options?.redirect) params.set('checkout[redirect_url]', options.redirect)
 
-  // Disable free trials on Lemon side (trial is managed by VitalOS)
-  params.set('checkout[disable_discount]', 'false')
-
   const query = params.toString()
-  return `https://${LEMON_STORE}.lemonsqueezy.com/buy/${variantId}${query ? `?${query}` : ''}`
+  return query ? `${base}?${query}` : base
 }
 
-// ── Redirect user to Lemon Squeezy checkout ───────────────────────────────────
+// ── Open checkout in a new tab ────────────────────────────────────────────────
 export function openLemonCheckout(
   tier: Tier,
   options?: {
@@ -69,13 +55,13 @@ export function openLemonCheckout(
 ): void {
   const url = getLemonCheckoutUrl(tier, options)
   if (!url) {
-    console.warn(`[VitalOS] No Lemon Squeezy variant configured for tier: ${tier}`)
+    console.warn(`[VitalOS] No Lemon Squeezy checkout URL configured for tier: ${tier}`)
     return
   }
   window.open(url, '_blank', 'noopener,noreferrer')
 }
 
-// ── Tier pricing display ──────────────────────────────────────────────────────
+// ── Pricing display labels ────────────────────────────────────────────────────
 export const LEMON_TIER_PRICES: Record<Tier, string> = {
   node:      'Free',
   validator: '$9 / month',
@@ -84,13 +70,10 @@ export const LEMON_TIER_PRICES: Record<Tier, string> = {
   protocol:  'Contact us',
 }
 
-// ── Check if Lemon Squeezy is configured for a tier ──────────────────────────
+// ── Is checkout configured for a tier? ───────────────────────────────────────
 export function isLemonConfigured(tier: Tier): boolean {
-  return !!getVariantId(tier)
+  return !!getCheckoutUrl(tier)
 }
 
-// ── Management portal link ────────────────────────────────────────────────────
-// After subscribing, users can manage their subscription here.
-// Replace with your store's customer portal URL from Lemon Squeezy dashboard.
-export const LEMON_PORTAL_URL =
-  `https://${LEMON_STORE}.lemonsqueezy.com/billing`
+// ── Customer billing portal ───────────────────────────────────────────────────
+export const LEMON_PORTAL_URL = 'https://vitalos.lemonsqueezy.com/billing'

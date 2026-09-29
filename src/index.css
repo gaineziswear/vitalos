@@ -1,0 +1,240 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@import url('https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800;900&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;1,9..40,400&family=JetBrains+Mono:wght@400;500&display=swap');
+
+/* ── Reset & Base ─────────────────────────────────────────────────────────── */
+*, *::before, *::after { box-sizing: border-box; }
+
+html {
+  scroll-behavior: smooth;
+  -webkit-text-size-adjust: 100%;
+}
+
+body {
+  margin: 0;
+  font-family: 'DM Sans', sans-serif;
+  background-color: #080b0b;
+  color: #eef3f3;
+  min-height: 100dvh;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
+}
+
+/* ── Scrollbar ──────────────────────────────────────────────────────────────  */
+::-webkit-scrollbar          { width: 4px; height: 4px; }
+::-webkit-scrollbar-track    { background: transparent; }
+::-webkit-scrollbar-thumb    { background: #1f2828; border-radius: 2px; }
+::-webkit-scrollbar-thumb:hover { background: #2a3535; }
+.scrollbar-none              { scrollbar-width: none; }
+.scrollbar-none::-webkit-scrollbar { display: none; }
+
+/* ── Selection ──────────────────────────────────────────────────────────────  */
+::selection { background: rgba(13,191,134,.25); color: #eef3f3; }
+
+/* ── Focus ──────────────────────────────────────────────────────────────────  */
+:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 2px #080b0b, 0 0 0 4px #0dbf86;
+  border-radius: 6px;
+}
+
+/* ── Typography helpers ─────────────────────────────────────────────────────  */
+.font-display { font-family: 'Manrope', sans-serif; }
+.font-mono    { font-family: 'JetBrains Mono', 'Menlo', monospace; }
+.tabular      { font-variant-numeric: tabular-nums; }
+
+/* ── Component layer ────────────────────────────────────────────────────────  */
+@layer components {
+
+  /* ── Buttons ── */
+  .btn-primary {
+    @apply inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl
+           bg-mint-500 text-surface-base font-bold text-sm
+           hover:bg-mint-400 active:scale-[0.98] transition-all duration-100
+           disabled:opacity-40 disabled:pointer-events-none
+           focus-visible:ring-2 focus-visible:ring-mint-500 focus-visible:ring-offset-2 focus-visible:ring-offset-surface-base;
+  }
+  .btn-secondary {
+    @apply inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl
+           bg-surface-raised border border-surface-border text-ink-secondary font-semibold text-sm
+           hover:text-ink-primary hover:border-surface-border-hi active:scale-[0.98] transition-all duration-100
+           disabled:opacity-40 disabled:pointer-events-none;
+  }
+  .btn-ghost {
+    @apply inline-flex items-center justify-center gap-1.5 px-3 py-2 rounded-lg
+           text-ink-secondary font-medium text-sm
+           hover:text-ink-primary hover:bg-surface-muted transition-all duration-100
+           disabled:opacity-40 disabled:pointer-events-none;
+  }
+  .btn-danger {
+    @apply inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl
+           bg-red-500/10 border border-red-500/20 text-red-400 font-semibold text-sm
+           hover:bg-red-500/20 transition-all duration-100;
+  }
+
+  /* ── Cards ── */
+  .card {
+    @apply bg-surface-raised rounded-2xl border border-surface-border;
+  }
+  .card-elevated {
+    @apply bg-surface-overlay rounded-2xl border border-surface-border shadow-card;
+  }
+  .card-accent {
+    @apply rounded-2xl border border-mint-500/20 shadow-glow-mint-sm;
+    background: linear-gradient(135deg, rgba(13,191,134,.06) 0%, rgba(14,18,18,.8) 60%);
+  }
+  .card-warn {
+    @apply rounded-xl border border-amber-500/25;
+    background: rgba(245,158,11,.06);
+  }
+  .card-danger {
+    @apply rounded-xl border border-red-500/20;
+    background: rgba(239,68,68,.06);
+  }
+
+  /* ── Inner metric cell ── */
+  .metric-cell {
+    @apply bg-surface-overlay rounded-xl p-3.5 border border-surface-border flex flex-col gap-1;
+  }
+  .metric-label {
+    @apply text-[10px] text-ink-muted uppercase font-semibold;
+    letter-spacing: 0.08em;
+  }
+  .metric-value {
+    @apply font-display text-lg font-bold text-ink-primary tabular leading-none;
+    letter-spacing: -0.02em;
+  }
+  .metric-sub {
+    @apply text-[11px] text-ink-secondary;
+  }
+
+  /* ── Section heading ── */
+  .section-heading {
+    @apply text-sm font-semibold text-ink-primary;
+  }
+  .section-label {
+    @apply text-[10px] text-ink-muted uppercase font-bold;
+    letter-spacing: 0.10em;
+  }
+
+  /* ── Nav ── */
+  .nav-item {
+    @apply w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-[13px] font-medium
+           transition-all duration-100 text-ink-secondary
+           hover:text-ink-primary hover:bg-surface-muted;
+  }
+  .nav-item-active {
+    @apply bg-mint-500/8 text-ink-primary;
+  }
+  .nav-active-bar {
+    @apply absolute left-0 top-1/2 -translate-y-1/2 w-0.5 h-5 rounded-r-full bg-mint-500;
+  }
+
+  /* ── Tags / chips ── */
+  .chip {
+    @apply inline-flex items-center px-2 py-0.5 rounded-md text-[11px] font-semibold
+           bg-surface-overlay border border-surface-border text-ink-secondary;
+  }
+  .chip-mint {
+    @apply inline-flex items-center px-2 py-0.5 rounded-md text-[11px] font-semibold
+           bg-mint-500/10 border border-mint-500/20 text-mint-400;
+  }
+  .chip-amber {
+    @apply inline-flex items-center px-2 py-0.5 rounded-md text-[11px] font-semibold
+           bg-amber-500/10 border border-amber-500/20 text-amber-400;
+  }
+  .chip-red {
+    @apply inline-flex items-center px-2 py-0.5 rounded-md text-[11px] font-semibold
+           bg-red-500/10 border border-red-500/20 text-red-400;
+  }
+
+  /* ── Table row ── */
+  .table-row {
+    @apply flex items-center justify-between py-2.5 border-b border-surface-border last:border-0;
+  }
+  .table-label {
+    @apply text-xs text-ink-secondary;
+  }
+  .table-value {
+    @apply text-sm font-semibold text-ink-primary tabular;
+  }
+
+  /* ── Input ── */
+  .input {
+    @apply w-full px-3.5 py-2.5 rounded-xl bg-surface-overlay border border-surface-border
+           text-sm text-ink-primary placeholder:text-ink-muted
+           focus:outline-none focus:border-mint-500/60 focus:bg-surface-overlay
+           transition-colors duration-100;
+  }
+
+  /* ── Segmented control ── */
+  .seg-control {
+    @apply flex gap-1 bg-surface-muted rounded-xl p-1;
+  }
+  .seg-item {
+    @apply flex-1 py-1.5 text-[11px] font-semibold rounded-lg transition-all capitalize
+           text-ink-muted hover:text-ink-secondary;
+  }
+  .seg-item-active {
+    @apply bg-surface-overlay text-ink-primary shadow-card-xs;
+  }
+
+  /* ── Yield/Risk pills ── */
+  .yield-pill-high {
+    @apply inline-flex items-center gap-1 px-2 py-1 rounded-lg text-xs font-bold tabular
+           bg-mint-500/10 border border-mint-500/20 text-mint-400;
+  }
+  .yield-pill-mid {
+    @apply inline-flex items-center gap-1 px-2 py-1 rounded-lg text-xs font-bold tabular
+           bg-amber-500/10 border border-amber-500/20 text-amber-400;
+  }
+  .yield-pill-low {
+    @apply inline-flex items-center gap-1 px-2 py-1 rounded-lg text-xs font-bold tabular
+           bg-surface-overlay border border-surface-border text-ink-secondary;
+  }
+
+  /* ── Divider ── */
+  .divider { @apply border-t border-surface-border; }
+
+  /* ── Demo badge ── */
+  .demo-badge {
+    @apply inline-flex items-center gap-1.5 px-2 py-1 rounded-md text-[10px] font-semibold uppercase
+           bg-amber-500/8 border border-amber-500/15 text-amber-400;
+    letter-spacing: 0.06em;
+  }
+
+  /* ── Pulse animation for live indicators ── */
+  .glow-pulse {
+    animation: glowPulse 2.4s ease-in-out infinite;
+  }
+  @keyframes glowPulse {
+    0%, 100% { opacity: 1; box-shadow: 0 0 6px rgba(13,191,134,.5); }
+    50%       { opacity: .5; box-shadow: 0 0 12px rgba(13,191,134,.15); }
+  }
+
+  /* ── Progress bar ── */
+  .progress-bar {
+    @apply h-1.5 rounded-full bg-surface-muted overflow-hidden;
+  }
+  .progress-fill {
+    @apply h-full rounded-full transition-all duration-500;
+  }
+
+  /* ── Capital flow line ── */
+  .flow-line {
+    @apply absolute left-1/2 -translate-x-1/2 w-px bg-gradient-to-b from-mint-500/40 to-transparent;
+  }
+
+  /* ── Stat delta ── */
+  .delta-pos { @apply text-mint-400 font-semibold tabular; }
+  .delta-neg { @apply text-red-400 font-semibold tabular; }
+
+  /* ── Tooltip ── */
+  .tooltip {
+    @apply absolute z-50 px-2.5 py-1.5 rounded-lg bg-surface-overlay border border-surface-border
+           text-xs text-ink-primary shadow-card pointer-events-none whitespace-nowrap;
+  }
+}

@@ -1,0 +1,48 @@
+# Dependencies
+node_modules/
+.pnp
+.pnp.js
+
+# Build output
+dist/
+dist-ssr/
+build/
+out/
+
+# Foundry / contracts
+contracts/out/
+contracts/cache/
+contracts/broadcast/
+
+# Environment — NEVER commit secrets
+.env
+.env.*
+!.env.example
+
+# Circle credentials
+.circle/
+
+# Logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Editor
+.vscode/
+.idea/
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Testing
+coverage/
+
+# Misc
+*.tsbuildinfo

@@ -1,7 +1,7 @@
 import { useApp, type Screen } from '../../lib/app-context'
 import { useT } from '../../lib/i18n'
 import { cn } from '../../lib/utils'
-import { LayoutDashboard, Search, Briefcase, Shield, Fingerprint } from 'lucide-react'
+import { LayoutDashboard, Search, Briefcase, Shield, Fingerprint, Radio } from 'lucide-react'
 import type { GuardAlert } from '../../types/yieldos'
 
 interface Props {
@@ -14,6 +14,7 @@ export function MobileNav({ alerts }: Props) {
   const activeAlerts = alerts.filter(a => a.incidentStatus !== 'RESOLVED').length
 
   const tabs: { id: Screen; icon: React.ReactNode; label: string; badge?: number }[] = [
+    { id: 'broadcast', icon: <Radio size={20} />,          label: 'Live' },
     { id: 'overview',  icon: <LayoutDashboard size={20} />, label: t.nav.overview },
     { id: 'discover',  icon: <Search size={20} />,          label: t.nav.discover },
     { id: 'portfolio', icon: <Briefcase size={20} />,       label: t.nav.portfolio },

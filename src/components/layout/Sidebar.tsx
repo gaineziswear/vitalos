@@ -3,7 +3,7 @@ import { useT } from '../../lib/i18n'
 import { cn } from '../../lib/utils'
 import {
   LayoutDashboard, Search, Briefcase, Zap, FlaskConical,
-  Shield, Fingerprint, Settings, AlertTriangle, Activity,
+  Shield, Fingerprint, Settings, AlertTriangle, Activity, Radio,
 } from 'lucide-react'
 import type { GuardAlert } from '../../types/yieldos'
 import { UserMenu } from '../auth/UserMenu'
@@ -37,6 +37,7 @@ export function Sidebar({ alerts }: Props) {
 
   const navItems: NavItem[] = [
     { id: 'overview',  icon: <LayoutDashboard size={16} />, label: t.nav.overview,    section: 'CAPITAL' },
+    { id: 'broadcast', icon: <Radio size={16} />,           label: 'VitalOS Live', section: 'BROADCAST' },
     { id: 'portfolio', icon: <Briefcase size={16} />,       label: t.nav.portfolio },
     { id: 'discover',  icon: <Search size={16} />,          label: t.nav.discover },
     { id: 'optimise',  icon: <Zap size={16} />,             label: t.nav.optimise },

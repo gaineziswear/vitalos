@@ -3,7 +3,7 @@ import type { AppMode } from '../types/yieldos'
 import type { Lang } from './i18n'
 import { useAccount, useConnect, useDisconnect } from 'wagmi'
 
-export type Screen = 'onboarding' | 'overview' | 'portfolio' | 'discover' | 'optimise' | 'scenario' | 'guard' | 'passport' | 'mandate' | 'settings'
+export type Screen = 'onboarding' | 'overview' | 'portfolio' | 'discover' | 'optimise' | 'scenario' | 'guard' | 'passport' | 'mandate' | 'settings' | 'broadcast'
 
 interface AppCtx {
   screen: Screen; setScreen: (s: Screen) => void
@@ -15,14 +15,9 @@ interface AppCtx {
 }
 
 const Ctx = createContext<AppCtx | null>(null)
-
 function readStored<T>(key: string, fallback: T): T {
-  try {
-    const value = window.localStorage.getItem(key)
-    return value === null ? fallback : JSON.parse(value) as T
-  } catch {
-    return fallback
-  }
+  try { const value = window.localStorage.getItem(key); return value === null ? fallback : JSON.parse(value) as T }
+  catch { return fallback }
 }
 
 export function AppProvider({ children }: { children: ReactNode }) {
@@ -33,36 +28,17 @@ export function AppProvider({ children }: { children: ReactNode }) {
   const { address, isConnected } = useAccount()
   const { connect, connectors } = useConnect()
   const { disconnect } = useDisconnect()
-
   useEffect(() => { window.localStorage.setItem('vitalos.screen', JSON.stringify(screen)) }, [screen])
   useEffect(() => { window.localStorage.setItem('vitalos.mode', JSON.stringify(mode)) }, [mode])
   useEffect(() => { window.localStorage.setItem('vitalos.lang', JSON.stringify(lang)) }, [lang])
   useEffect(() => { window.localStorage.setItem('vitalos.onboardingComplete', JSON.stringify(onboardingComplete)) }, [onboardingComplete])
-
-  function connectWallet() {
-    const connector = connectors.find((item) => item.id === 'injected') ?? connectors[0]
-    if (connector) void connect({ connector })
-  }
-
+  function connectWallet() { const connector = connectors.find((item) => item.id === 'injected') ?? connectors[0]; if (connector) void connect({ connector }) }
   function disconnectWallet() { void disconnect() }
-
   function completeOnboarding(mandate?: { objective?: string; liquidity?: string; risk?: string }) {
     setOnboardingComplete(true)
-    if (mandate) {
-      window.localStorage.setItem('vitalos.capitalMandate', JSON.stringify(mandate))
-    }
+    if (mandate) window.localStorage.setItem('vitalos.capitalMandate', JSON.stringify(mandate))
     setScreen('overview')
   }
-
-  return <Ctx.Provider value={{
-    screen, setScreen, mode, setMode, lang, setLang,
-    walletConnected: isConnected, walletAddress: address ?? '',
-    connectWallet, disconnectWallet, onboardingComplete, completeOnboarding,
-  }}>{children}</Ctx.Provider>
+  return <Ctx.Provider value={{ screen, setScreen, mode, setMode, lang, setLang, walletConnected: isConnected, walletAddress: address ?? '', connectWallet, disconnectWallet, onboardingComplete, completeOnboarding }}>{children}</Ctx.Provider>
 }
-
-export function useApp(): AppCtx {
-  const ctx = useContext(Ctx)
-  if (!ctx) throw new Error('useApp must be used within AppProvider')
-  return ctx
-}
+export function useApp(): AppCtx { const ctx = useContext(Ctx); if (!ctx) throw new Error('useApp must be used within AppProvider'); return ctx }

@@ -1,4 +1,5 @@
 import { useMemo, useState } from 'react'
+import { DEFAULT_BROADCAST_CONFIG, readBroadcastConfig, writeBroadcastConfig, type BroadcastScene } from '../../lib/broadcast'
 import { useApp } from '../../lib/app-context'
 import {
   Activity, Radio, Play, Pause, Square, Settings2, Bot, Eye,
@@ -18,11 +19,16 @@ const scenes: { id: Scene; label: string; description: string }[] = [
 export function BroadcastScreen() {
   const { lang } = useApp()
   const fr = lang === 'fr'
-  const [running, setRunning] = useState(false)
-  const [mode, setMode] = useState<BroadcastMode>('away')
-  const [scene, setScene] = useState<Scene>('market')
-  const [autoProducer, setAutoProducer] = useState(true)
-  const [chatEnabled, setChatEnabled] = useState(true)
+  const initial = readBroadcastConfig()
+  const [running, setRunning] = useState(initial.enabled)
+  const [mode, setMode] = useState<BroadcastMode>(initial.mode)
+  const [scene, setScene] = useState<Scene>(initial.scene)
+  const [autoProducer, setAutoProducer] = useState(initial.aiProducer)
+  const [chatEnabled, setChatEnabled] = useState(initial.chatIntelligence)
+
+  function persist(patch: Partial<ReturnType<typeof readBroadcastConfig>>) {
+    writeBroadcastConfig({ ...readBroadcastConfig(), ...patch })
+  }
 
   const metrics = useMemo(() => ({
     viewers: running ? 37 : 0,
@@ -49,12 +55,12 @@ export function BroadcastScreen() {
             <p className="text-sm text-ink-secondary mt-1 max-w-2xl">{subtitle}</p>
           </div>
           <div className="flex flex-wrap gap-2">
-            <button className="btn-secondary" onClick={() => setAutoProducer(v => !v)}>
+            <button className="btn-secondary" onClick={() => { setAutoProducer(v => { const next = !v; persist({ aiProducer: next }); return next }) }}>
               <Bot size={15} /> AI Producer {autoProducer ? 'ON' : 'OFF'}
             </button>
             <button
               className={running ? 'btn-danger' : 'btn-primary'}
-              onClick={() => setRunning(v => !v)}
+              onClick={() => { setRunning(v => { const next = !v; persist({ enabled: next }); return next }) }}
             >
               {running ? <><Square size={14} /> Stop Broadcast</> : <><Play size={14} /> Start Broadcast</>}
             </button>
@@ -82,8 +88,8 @@ export function BroadcastScreen() {
               <div>
                 <div className="section-label mb-2">Operating Mode</div>
                 <div className="seg-control">
-                  <button className={mode === 'live' ? 'seg-item seg-item-active' : 'seg-item'} onClick={() => setMode('live')}>Live operator</button>
-                  <button className={mode === 'away' ? 'seg-item seg-item-active' : 'seg-item'} onClick={() => setMode('away')}>Away / Autopilot</button>
+                  <button className={mode === 'live' ? 'seg-item seg-item-active' : 'seg-item'} onClick={() => { setMode('live'); persist({ mode: 'live' }) }}>Live operator</button>
+                  <button className={mode === 'away' ? 'seg-item seg-item-active' : 'seg-item'} onClick={() => { setMode('away'); persist({ mode: 'away' }) }}>Away / Autopilot</button>
                 </div>
               </div>
 
@@ -93,7 +99,7 @@ export function BroadcastScreen() {
                   {scenes.map(item => (
                     <button
                       key={item.id}
-                      onClick={() => setScene(item.id)}
+                      onClick={() => { setScene(item.id); persist({ scene: item.id }) }}
                       className={scene === item.id ? 'text-left rounded-xl border border-mint-500/30 bg-mint-500/8 p-3 transition-all' : 'text-left rounded-xl border border-surface-border bg-surface-overlay p-3 hover:border-surface-border-hi transition-all'}
                     >
                       <div className="text-xs font-semibold text-ink-primary">{item.label}</div>
@@ -105,11 +111,11 @@ export function BroadcastScreen() {
 
               <div className="grid sm:grid-cols-2 gap-3">
                 <label className="metric-cell cursor-pointer">
-                  <span className="flex items-center justify-between"><span className="metric-label">AI Producer</span><input type="checkbox" checked={autoProducer} onChange={e => setAutoProducer(e.target.checked)} /></span>
+                  <span className="flex items-center justify-between"><span className="metric-label">AI Producer</span><input type="checkbox" checked={autoProducer} onChange={e => { setAutoProducer(e.target.checked); persist({ aiProducer: e.target.checked }) }} /></span>
                   <span className="metric-sub">Rotates scenes, scripts and data cards.</span>
                 </label>
                 <label className="metric-cell cursor-pointer">
-                  <span className="flex items-center justify-between"><span className="metric-label">Chat Intelligence</span><input type="checkbox" checked={chatEnabled} onChange={e => setChatEnabled(e.target.checked)} /></span>
+                  <span className="flex items-center justify-between"><span className="metric-label">Chat Intelligence</span><input type="checkbox" checked={chatEnabled} onChange={e => { setChatEnabled(e.target.checked); persist({ chatIntelligence: e.target.checked }) }} /></span>
                   <span className="metric-sub">Queues questions for human approval.</span>
                 </label>
               </div>

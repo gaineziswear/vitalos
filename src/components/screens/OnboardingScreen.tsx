@@ -20,7 +20,7 @@ export function OnboardingScreen() {
   const stepIdx = steps.indexOf(step)
 
   function finish() {
-    completeOnboarding(objective ?? 'unknown')
+    completeOnboarding({ objective: objective ?? 'unknown', liquidity: liquidity ?? 'unknown', risk: risk ?? 'unknown' })
   }
 
   function next() {

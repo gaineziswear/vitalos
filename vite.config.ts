@@ -30,6 +30,19 @@ export default defineConfig({
       'tailwind-merge',
     ],
   },
+  build: {
+    // Keep the production build informative while allowing intentional
+    // Web3 vendor chunks to remain above Vite's default warning threshold.
+    chunkSizeWarningLimit: 800,
+    rollupOptions: {
+      output: {
+        manualChunks: {
+          'web3-core': ['wagmi', 'viem', 'connectkit'],
+          'query-ui': ['@tanstack/react-query', 'sonner'],
+        },
+      },
+    },
+  },
   server: {
     allowedHosts: true,
     cors: true,

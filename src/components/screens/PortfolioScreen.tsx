@@ -40,7 +40,7 @@ export function PortfolioScreen() {
             <p className="text-[10px] text-ink-muted">Native balance on connected chain</p>
           </div>
         </div>
-      ) : <DemoBadge />
+      ) : <DemoBadge />}
 
       {/* Header */}
       <div className="flex items-start justify-between">

@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { useAccount, useBalance } from 'wagmi'
 import { useApp } from '../../lib/app-context'
 import { useT } from '../../lib/i18n'
 import { DEMO_PORTFOLIO } from '../../lib/demo-data'
@@ -10,7 +11,11 @@ import { AlertCircle, BarChart2 } from 'lucide-react'
 type Tab = 'positions' | 'exposure' | 'attribution' | 'concentration'
 
 export function PortfolioScreen() {
-  const { mode } = useApp()
+  const { mode, walletConnected, walletAddress } = useApp()
+  const { data: walletBalance, isLoading: walletBalanceLoading } = useBalance({
+    address: walletAddress as `0x${string}` | undefined,
+    query: { enabled: walletConnected && !!walletAddress },
+  })
   const { t } = useT()
   const [tab, setTab] = useState<Tab>('positions')
   const p = DEMO_PORTFOLIO
@@ -24,7 +29,18 @@ export function PortfolioScreen() {
 
   return (
     <div className="max-w-4xl mx-auto px-4 py-6 pb-24 lg:pb-8 space-y-5">
-      <DemoBadge />
+      {walletConnected ? (
+        <div className="flex items-center justify-between gap-3 px-3 py-2 rounded-lg bg-mint-500/6 border border-mint-500/15">
+          <div className="min-w-0">
+            <p className="text-[10px] uppercase tracking-widest font-bold text-mint-400">Live wallet</p>
+            <p className="text-[11px] text-ink-secondary font-mono truncate">{walletAddress}</p>
+          </div>
+          <div className="text-right shrink-0">
+            <p className="text-xs font-bold text-ink-primary">{walletBalanceLoading ? 'Loading…' : walletBalance ? `${Number(walletBalance.formatted).toFixed(5)} ${walletBalance.symbol}` : 'Unavailable'}</p>
+            <p className="text-[10px] text-ink-muted">Native balance on connected chain</p>
+          </div>
+        </div>
+      ) : <DemoBadge />
 
       {/* Header */}
       <div className="flex items-start justify-between">

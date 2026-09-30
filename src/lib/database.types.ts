@@ -22,6 +22,7 @@ export interface Profile {
   capital_objective: string | null
   created_at: string
   updated_at: string
+  updated_by: string | null
 }
 
 export interface Database {

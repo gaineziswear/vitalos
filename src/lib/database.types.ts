@@ -22,6 +22,25 @@ export interface Profile {
   capital_objective: string | null
   created_at: string
   updated_at: string
+}
+
+export interface CapitalMandate {
+  id: string
+  user_id: string
+  name: string
+  objective: string | null
+  liquidity: string | null
+  risk_tolerance: 'conservative' | 'moderate' | 'aggressive' | null
+  max_protocol_exposure: number | null
+  max_chain_exposure: number | null
+  max_illiquid: number | null
+  max_leverage: number | null
+  experimental_budget: number | null
+  min_liquidity: number | null
+  min_yield_improvement: number | null
+  is_active: boolean | null
+  created_at: string
+  updated_at: string
   updated_by: string | null
 }
 
@@ -32,6 +51,11 @@ export interface Database {
         Row: Profile
         Insert: Profile
         Update: Partial<Profile>
+      }
+      capital_mandates: {
+        Row: CapitalMandate
+        Insert: Partial<CapitalMandate> & { user_id: string }
+        Update: Partial<CapitalMandate>
       }
     }
     Views: Record<string, never>

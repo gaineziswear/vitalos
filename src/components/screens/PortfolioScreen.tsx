@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { useAccount, useBalance } from 'wagmi'
+import { useBalance } from 'wagmi'
 import { useApp } from '../../lib/app-context'
 import { useT } from '../../lib/i18n'
 import { DEMO_PORTFOLIO } from '../../lib/demo-data'

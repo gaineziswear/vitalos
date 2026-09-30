@@ -19,10 +19,14 @@ export function OnboardingScreen() {
   const steps: Step[] = ['objective', 'liquidity', 'risk', 'disclosure', 'wallet']
   const stepIdx = steps.indexOf(step)
 
+  function finish() {
+    completeOnboarding(objective ?? 'unknown')
+  }
+
   function next() {
     const idx = steps.indexOf(step)
     if (idx < steps.length - 1) setStep(steps[idx + 1])
-    else completeOnboarding()
+    else finish()
   }
   function back() {
     const idx = steps.indexOf(step)
@@ -221,13 +225,13 @@ export function OnboardingScreen() {
                 {t.onboarding.walletSub}
               </p>
               <button
-                onClick={() => { connectWallet(); completeOnboarding() }}
+                onClick={() => { connectWallet(); finish() }}
                 className="w-full py-3.5 rounded-xl bg-mint-500 text-surface-base font-bold text-sm hover:bg-mint-400 transition-colors mb-3"
               >
                 {t.nav.connectWallet}
               </button>
               <button
-                onClick={completeOnboarding}
+                onClick={finish}
                 className="w-full py-3 rounded-xl border border-surface-border text-ink-secondary text-sm font-medium hover:text-ink-primary hover:border-ink-muted transition-colors"
               >
                 {t.onboarding.skip}

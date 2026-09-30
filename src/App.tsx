@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { lazy, Suspense, useState } from 'react'
 import { AppProvider, useApp } from './lib/app-context'
 import { I18nCtx, translations } from './lib/i18n'
 import { DEMO_ALERTS } from './lib/demo-data'
@@ -9,16 +9,25 @@ import { Sidebar } from './components/layout/Sidebar'
 import { MobileNav } from './components/layout/MobileNav'
 import { TopBar } from './components/layout/TopBar'
 
-// Screens
-import { OnboardingScreen } from './components/screens/OnboardingScreen'
-import { OverviewScreen } from './components/screens/OverviewScreen'
-import { DiscoverScreen } from './components/screens/DiscoverScreen'
-import { PortfolioScreen } from './components/screens/PortfolioScreen'
-import { OptimiseScreen } from './components/screens/OptimiseScreen'
-import { ScenarioScreen } from './components/screens/ScenarioScreen'
-import { GuardScreen } from './components/screens/GuardScreen'
-import { PassportScreen } from './components/screens/PassportScreen'
-import { MandateScreen } from './components/screens/MandateScreen'
+// Screens are lazy-loaded so the landing page and first app view do not
+// download every Web3-heavy screen on first paint.
+const OnboardingScreen = lazy(() => import('./components/screens/OnboardingScreen').then(m => ({ default: m.OnboardingScreen })))
+const OverviewScreen = lazy(() => import('./components/screens/OverviewScreen').then(m => ({ default: m.OverviewScreen })))
+const DiscoverScreen = lazy(() => import('./components/screens/DiscoverScreen').then(m => ({ default: m.DiscoverScreen })))
+const PortfolioScreen = lazy(() => import('./components/screens/PortfolioScreen').then(m => ({ default: m.PortfolioScreen })))
+const OptimiseScreen = lazy(() => import('./components/screens/OptimiseScreen').then(m => ({ default: m.OptimiseScreen })))
+const ScenarioScreen = lazy(() => import('./components/screens/ScenarioScreen').then(m => ({ default: m.ScenarioScreen })))
+const GuardScreen = lazy(() => import('./components/screens/GuardScreen').then(m => ({ default: m.GuardScreen })))
+const PassportScreen = lazy(() => import('./components/screens/PassportScreen').then(m => ({ default: m.PassportScreen })))
+const MandateScreen = lazy(() => import('./components/screens/MandateScreen').then(m => ({ default: m.MandateScreen })))
+
+function ScreenLoader() {
+  return (
+    <div className="min-h-[40vh] grid place-items-center" role="status" aria-live="polite">
+      <div className="text-sm text-ink-secondary">Loading VitalOS…</div>
+    </div>
+  )
+}
 
 function AppShell() {
   const { screen, lang, setLang, onboardingComplete } = useApp()
@@ -26,7 +35,9 @@ function AppShell() {
   if (!onboardingComplete || screen === 'onboarding') {
     return (
       <I18nCtx.Provider value={{ lang, setLang, t: translations[lang] }}>
-        <OnboardingScreen />
+        <Suspense fallback={<ScreenLoader />}>
+          <OnboardingScreen />
+        </Suspense>
       </I18nCtx.Provider>
     )
   }
@@ -34,27 +45,23 @@ function AppShell() {
   return (
     <I18nCtx.Provider value={{ lang, setLang, t: translations[lang] }}>
       <div className="min-h-dvh bg-surface-base flex">
-        {/* Desktop sidebar */}
         <Sidebar alerts={DEMO_ALERTS} />
-
-        {/* Main content area */}
         <div className="flex-1 flex flex-col min-w-0">
           <TopBar />
-
           <main id="main-content" className="flex-1 overflow-y-auto">
-            {screen === 'overview'   && <OverviewScreen />}
-            {screen === 'portfolio'  && <PortfolioScreen />}
-            {screen === 'discover'   && <DiscoverScreen />}
-            {screen === 'optimise'   && <OptimiseScreen />}
-            {screen === 'scenario'   && <ScenarioScreen />}
-            {screen === 'guard'      && <GuardScreen />}
-            {screen === 'passport'   && <PassportScreen />}
-            {screen === 'mandate'    && <MandateScreen />}
-            {screen === 'settings'   && <SettingsPlaceholder />}
+            <Suspense fallback={<ScreenLoader />}>
+              {screen === 'overview'   && <OverviewScreen />}
+              {screen === 'portfolio'  && <PortfolioScreen />}
+              {screen === 'discover'   && <DiscoverScreen />}
+              {screen === 'optimise'   && <OptimiseScreen />}
+              {screen === 'scenario'   && <ScenarioScreen />}
+              {screen === 'guard'      && <GuardScreen />}
+              {screen === 'passport'   && <PassportScreen />}
+              {screen === 'mandate'    && <MandateScreen />}
+              {screen === 'settings'   && <SettingsPlaceholder />}
+            </Suspense>
           </main>
         </div>
-
-        {/* Mobile bottom nav */}
         <MobileNav alerts={DEMO_ALERTS} />
       </div>
     </I18nCtx.Provider>

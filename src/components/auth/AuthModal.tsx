@@ -61,23 +61,23 @@ export function AuthModal({ open, onClose, defaultView = 'sign_in' }: AuthModalP
 
   return (
     <div
-      className="fixed inset-0 z-50 flex items-center justify-center p-4"
+      className="fixed inset-0 z-[100] flex items-center justify-center p-4 sm:p-6"
       role="dialog"
       aria-modal="true"
       aria-label={view === 'sign_in' ? 'Sign in to VitalOS' : 'Create your VitalOS account'}
     >
       {/* Backdrop */}
       <div
-        className="absolute inset-0 bg-black/70 backdrop-blur-sm"
+        className="absolute inset-0 bg-black/85 backdrop-blur-md"
         onClick={onClose}
         aria-hidden="true"
       />
 
       {/* Panel */}
-      <div className="relative w-full max-w-sm bg-surface-card border border-surface-border rounded-2xl shadow-2xl overflow-hidden">
+      <div className="relative w-full max-w-md max-h-[calc(100dvh-2rem)] overflow-y-auto bg-[#101616] border border-white/15 rounded-3xl shadow-[0_30px_100px_rgba(0,0,0,.65)] overflow-hidden">
 
         {/* Header */}
-        <div className="px-6 pt-6 pb-5 border-b border-surface-border">
+        <div className="px-7 pt-7 pb-6 border-b border-white/10 bg-[#121a1a]">
           <div className="flex items-center justify-between mb-4">
             <div className="flex items-center gap-2.5">
               <div className="w-7 h-7 rounded-lg bg-mint-500/15 border border-mint-500/25 flex items-center justify-center">
@@ -97,7 +97,7 @@ export function AuthModal({ open, onClose, defaultView = 'sign_in' }: AuthModalP
           <h2 className="font-display font-bold text-xl text-ink-primary leading-tight">
             {view === 'sign_in' ? 'Welcome back' : 'Start your free trial'}
           </h2>
-          <p className="text-sm text-ink-muted mt-1">
+          <p className="text-sm text-ink-secondary mt-1">
             {view === 'sign_in'
               ? 'Sign in to your capital operating system.'
               : '7 days of Architect-tier access. No card required.'}
@@ -105,7 +105,7 @@ export function AuthModal({ open, onClose, defaultView = 'sign_in' }: AuthModalP
         </div>
 
         {/* Body */}
-        <div className="px-6 py-5 space-y-4">
+        <div className="px-7 py-6 space-y-4 bg-[#0e1414]">
 
           {/* Trial badge */}
           {view === 'sign_up' && (

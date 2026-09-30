@@ -11,7 +11,7 @@ interface AppCtx {
   lang: Lang; setLang: (l: Lang) => void
   walletConnected: boolean; walletAddress: string
   connectWallet: () => void; disconnectWallet: () => void
-  onboardingComplete: boolean; completeOnboarding: (objective?: string) => void
+  onboardingComplete: boolean; completeOnboarding: (mandate?: { objective?: string; liquidity?: string; risk?: string }) => void
 }
 
 const Ctx = createContext<AppCtx | null>(null)
@@ -46,10 +46,10 @@ export function AppProvider({ children }: { children: ReactNode }) {
 
   function disconnectWallet() { void disconnect() }
 
-  function completeOnboarding(objective?: string) {
+  function completeOnboarding(mandate?: { objective?: string; liquidity?: string; risk?: string }) {
     setOnboardingComplete(true)
-    if (objective) {
-      window.localStorage.setItem('vitalos.capitalObjective', JSON.stringify(objective))
+    if (mandate) {
+      window.localStorage.setItem('vitalos.capitalMandate', JSON.stringify(mandate))
     }
     setScreen('overview')
   }

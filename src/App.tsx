@@ -20,6 +20,7 @@ const ScenarioScreen = lazy(() => import('./components/screens/ScenarioScreen').
 const GuardScreen = lazy(() => import('./components/screens/GuardScreen').then(m => ({ default: m.GuardScreen })))
 const PassportScreen = lazy(() => import('./components/screens/PassportScreen').then(m => ({ default: m.PassportScreen })))
 const MandateScreen = lazy(() => import('./components/screens/MandateScreen').then(m => ({ default: m.MandateScreen })))
+const SettingsScreen = lazy(() => import('./components/screens/SettingsScreen').then(m => ({ default: m.SettingsScreen })))
 
 function ScreenLoader() {
   return (
@@ -58,22 +59,13 @@ function AppShell() {
               {screen === 'guard'      && <GuardScreen />}
               {screen === 'passport'   && <PassportScreen />}
               {screen === 'mandate'    && <MandateScreen />}
-              {screen === 'settings'   && <SettingsPlaceholder />}
+              {screen === 'settings'   && <SettingsScreen />}
             </Suspense>
           </main>
         </div>
         <MobileNav alerts={DEMO_ALERTS} />
       </div>
     </I18nCtx.Provider>
-  )
-}
-
-function SettingsPlaceholder() {
-  return (
-    <div className="max-w-2xl mx-auto px-4 py-12 pb-24">
-      <h1 className="font-display text-xl font-bold text-ink-primary mb-2">Settings</h1>
-      <p className="text-sm text-ink-secondary">Notification preferences, connected wallets, security settings — coming in the next build phase.</p>
-    </div>
   )
 }
 

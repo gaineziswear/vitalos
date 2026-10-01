@@ -2,6 +2,7 @@ import http from 'node:http'
 import { spawn } from 'node:child_process'
 import { createProgramme } from './programme.mjs'
 import { encoderArgs } from './renderer.mjs'
+import { fetchMarketSnapshot } from './market-data.mjs'
 
 const PORT = Number(process.env.PORT ?? 8788)
 const CONTROL_TOKEN = process.env.BROADCAST_CONTROL_TOKEN ?? ''
@@ -68,7 +69,7 @@ function startEncoder() {
   }
   stopping = false
   update({ enabled: true, startedAt: state.startedAt ?? new Date().toISOString(), lastError: null })
-  startProgramme()
+  fetchMarketSnapshot().then(startProgramme).catch(() => startProgramme())
 }
 
 async function handle(req, res) {

@@ -2,6 +2,8 @@ export interface Env {
   ASSETS: { fetch: (request: Request) => Promise<Response> }
   BROADCAST_WORKER_URL?: string
   BROADCAST_CONTROL_TOKEN?: string
+  SUPABASE_URL?: string
+  SUPABASE_PUBLISHABLE_KEY?: string
 }
 
 const securityHeaders = {
@@ -28,9 +30,17 @@ function withSecurityHeaders(response: Response, extra: Record<string, string> =
   return new Response(response.body, { status: response.status, statusText: response.statusText, headers })
 }
 
-function isAuthorized(request: Request, env: Env) {
-  const expected = env.BROADCAST_CONTROL_TOKEN
-  return Boolean(expected && request.headers.get('Authorization') === `Bearer ${expected}`)
+async function isAuthenticated(request: Request, env: Env) {
+  const authorization = request.headers.get('Authorization')
+  if (!authorization?.startsWith('Bearer ') || !env.SUPABASE_URL || !env.SUPABASE_PUBLISHABLE_KEY) return false
+
+  const response = await fetch(`${env.SUPABASE_URL.replace(/\\/$/, '')}/auth/v1/user`, {
+    headers: {
+      apikey: env.SUPABASE_PUBLISHABLE_KEY,
+      Authorization: authorization,
+    },
+  })
+  return response.ok
 }
 
 async function encoderRequest(env: Env, path: string, init: RequestInit = {}) {
@@ -82,8 +92,8 @@ export default {
         })
       }
 
-      if (!isAuthorized(request, env)) {
-        return json({ error: 'Unauthorized broadcast control request.' }, 401)
+      if (!(await isAuthenticated(request, env))) {
+        return json({ error: 'Authenticated VITALOS account required.' }, 401)
       }
 
       const endpoint = url.pathname.replace('/api/broadcast', '') || '/status'

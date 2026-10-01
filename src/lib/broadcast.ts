@@ -1,3 +1,5 @@
+import { supabase } from './supabase'
+
 export type BroadcastScene = 'market' | 'stewardship' | 'opportunity' | 'community'
 
 export interface BroadcastConfig {
@@ -47,10 +49,14 @@ export function broadcastApiBase(): string {
 }
 
 async function request<T>(path: string, init?: RequestInit): Promise<T> {
+  const { data: { session } } = await supabase.auth.getSession()
+  if (!session?.access_token) throw new Error('Sign in to control VITALOS Live.')
+
   const response = await fetch(`${broadcastApiBase()}${path}`, {
     ...init,
     headers: {
       'Content-Type': 'application/json',
+      Authorization: `Bearer ${session.access_token}`,
       ...(init?.headers ?? {}),
     },
     credentials: 'include',

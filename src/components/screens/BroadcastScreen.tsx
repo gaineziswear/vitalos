@@ -1,5 +1,5 @@
-import { useMemo, useState } from 'react'
-import { DEFAULT_BROADCAST_CONFIG, readBroadcastConfig, writeBroadcastConfig, type BroadcastScene } from '../../lib/broadcast'
+import { useEffect, useMemo, useState } from 'react'
+import { readBroadcastConfig, writeBroadcastConfig, fetchBroadcastStatus, startBroadcast, stopBroadcast, updateBroadcastConfig, type BroadcastStatus } from '../../lib/broadcast'
 import { useApp } from '../../lib/app-context'
 import {
   Activity, Radio, Play, Pause, Square, Settings2, Bot, Eye,
@@ -25,17 +25,30 @@ export function BroadcastScreen() {
   const [scene, setScene] = useState<Scene>(initial.scene)
   const [autoProducer, setAutoProducer] = useState(initial.aiProducer)
   const [chatEnabled, setChatEnabled] = useState(initial.chatIntelligence)
+  const [status, setStatus] = useState<BroadcastStatus | null>(null)
+  const [error, setError] = useState<string | null>(null)
+
+  useEffect(() => {
+    void fetchBroadcastStatus().then(remote => {
+      setStatus(remote)
+      setRunning(remote.enabled)
+      setMode(remote.mode)
+      setScene(remote.scene)
+      setAutoProducer(remote.aiProducer)
+      setChatEnabled(remote.chatIntelligence)
+    }).catch(() => setStatus(null))
+  }, [])
 
   function persist(patch: Partial<ReturnType<typeof readBroadcastConfig>>) {
     writeBroadcastConfig({ ...readBroadcastConfig(), ...patch })
   }
 
   const metrics = useMemo(() => ({
-    viewers: running ? 37 : 0,
-    uptime: running ? '02:14:38' : '—',
-    revenue: running ? '$4.82' : '$0.00',
-    engagement: running ? '6.4%' : '—',
-  }), [running])
+    viewers: 0,
+    uptime: status?.startedAt ? 'active' : '—',
+    revenue: '—',
+    engagement: '—',
+  }), [status])
 
   const title = fr ? 'VITALOS LIVE' : 'VITALOS LIVE'
   const subtitle = fr
@@ -54,13 +67,14 @@ export function BroadcastScreen() {
             <h1 className="font-display text-2xl lg:text-3xl font-extrabold tracking-tight text-ink-primary">{title}</h1>
             <p className="text-sm text-ink-secondary mt-1 max-w-2xl">{subtitle}</p>
           </div>
+          {error && <div className="card-warn px-3 py-2 text-xs text-amber-300">{error}</div>}
           <div className="flex flex-wrap gap-2">
-            <button className="btn-secondary" onClick={() => { setAutoProducer(v => { const next = !v; persist({ aiProducer: next }); return next }) }}>
+            <button className="btn-secondary" onClick={() => { setAutoProducer(v => { const next = !v; const cfg = { ...readBroadcastConfig(), aiProducer: next }; persist({ aiProducer: next }); void updateBroadcastConfig(cfg).then(setStatus).catch(e => setError(e.message)); return next }) }}>
               <Bot size={15} /> AI Producer {autoProducer ? 'ON' : 'OFF'}
             </button>
             <button
               className={running ? 'btn-danger' : 'btn-primary'}
-              onClick={() => { setRunning(v => { const next = !v; persist({ enabled: next }); return next }) }}
+              onClick={() => { void (running ? stopBroadcast() : startBroadcast({ ...readBroadcastConfig(), enabled: true, mode, scene, aiProducer: autoProducer, chatIntelligence: chatEnabled })).then(remote => { setStatus(remote); setRunning(remote.enabled); persist({ enabled: remote.enabled }) }).catch(e => setError(e.message)) }}
             >
               {running ? <><Square size={14} /> Stop Broadcast</> : <><Play size={14} /> Start Broadcast</>}
             </button>
@@ -68,10 +82,10 @@ export function BroadcastScreen() {
         </header>
 
         <div className="grid grid-cols-2 xl:grid-cols-4 gap-3">
-          <div className="metric-cell"><span className="metric-label">Viewers</span><span className="metric-value">{metrics.viewers}</span><span className="metric-sub">concurrent</span></div>
-          <div className="metric-cell"><span className="metric-label">Uptime</span><span className="metric-value font-mono text-base">{metrics.uptime}</span><span className="metric-sub">current session</span></div>
-          <div className="metric-cell"><span className="metric-label">Stream Revenue</span><span className="metric-value">{metrics.revenue}</span><span className="metric-sub">illustrative only</span></div>
-          <div className="metric-cell"><span className="metric-label">Engagement</span><span className="metric-value">{metrics.engagement}</span><span className="metric-sub">chat + interactions</span></div>
+          <div className="metric-cell"><span className="metric-label">Encoder</span><span className="metric-value text-base">{status?.encoder ?? 'unknown'}</span><span className="metric-sub">live health</span></div>
+          <div className="metric-cell"><span className="metric-label">Service</span><span className="metric-value text-base">{status?.service ?? 'unknown'}</span><span className="metric-sub">server status</span></div>
+          <div className="metric-cell"><span className="metric-label">Restarts</span><span className="metric-value">{status?.restartCount ?? 0}</span><span className="metric-sub">encoder recovery</span></div>
+          <div className="metric-cell"><span className="metric-label">Telemetry</span><span className="metric-value text-base">{status ? 'connected' : 'pending'}</span><span className="metric-sub">Twitch layer next</span></div>
         </div>
 
         <div className="grid lg:grid-cols-[1.55fr_1fr] gap-5">
@@ -88,8 +102,8 @@ export function BroadcastScreen() {
               <div>
                 <div className="section-label mb-2">Operating Mode</div>
                 <div className="seg-control">
-                  <button className={mode === 'live' ? 'seg-item seg-item-active' : 'seg-item'} onClick={() => { setMode('live'); persist({ mode: 'live' }) }}>Live operator</button>
-                  <button className={mode === 'away' ? 'seg-item seg-item-active' : 'seg-item'} onClick={() => { setMode('away'); persist({ mode: 'away' }) }}>Away / Autopilot</button>
+                  <button className={mode === 'live' ? 'seg-item seg-item-active' : 'seg-item'} onClick={() => { setMode('live'); const cfg = { ...readBroadcastConfig(), mode: 'live' }; persist({ mode: 'live' }); void updateBroadcastConfig(cfg).then(setStatus).catch(e => setError(e.message)) }}>Live operator</button>
+                  <button className={mode === 'away' ? 'seg-item seg-item-active' : 'seg-item'} onClick={() => { setMode('away'); const cfg = { ...readBroadcastConfig(), mode: 'away' }; persist({ mode: 'away' }); void updateBroadcastConfig(cfg).then(setStatus).catch(e => setError(e.message)) }}>Away / Autopilot</button>
                 </div>
               </div>
 
@@ -99,7 +113,7 @@ export function BroadcastScreen() {
                   {scenes.map(item => (
                     <button
                       key={item.id}
-                      onClick={() => { setScene(item.id); persist({ scene: item.id }) }}
+                      onClick={() => { setScene(item.id); const cfg = { ...readBroadcastConfig(), scene: item.id }; persist({ scene: item.id }); void updateBroadcastConfig(cfg).then(setStatus).catch(e => setError(e.message)) }}
                       className={scene === item.id ? 'text-left rounded-xl border border-mint-500/30 bg-mint-500/8 p-3 transition-all' : 'text-left rounded-xl border border-surface-border bg-surface-overlay p-3 hover:border-surface-border-hi transition-all'}
                     >
                       <div className="text-xs font-semibold text-ink-primary">{item.label}</div>
@@ -111,11 +125,11 @@ export function BroadcastScreen() {
 
               <div className="grid sm:grid-cols-2 gap-3">
                 <label className="metric-cell cursor-pointer">
-                  <span className="flex items-center justify-between"><span className="metric-label">AI Producer</span><input type="checkbox" checked={autoProducer} onChange={e => { setAutoProducer(e.target.checked); persist({ aiProducer: e.target.checked }) }} /></span>
+                  <span className="flex items-center justify-between"><span className="metric-label">AI Producer</span><input type="checkbox" checked={autoProducer} onChange={e => { const value = e.target.checked; setAutoProducer(value); const cfg = { ...readBroadcastConfig(), aiProducer: value }; persist({ aiProducer: value }); void updateBroadcastConfig(cfg).then(setStatus).catch(err => setError(err.message)) }} /></span>
                   <span className="metric-sub">Rotates scenes, scripts and data cards.</span>
                 </label>
                 <label className="metric-cell cursor-pointer">
-                  <span className="flex items-center justify-between"><span className="metric-label">Chat Intelligence</span><input type="checkbox" checked={chatEnabled} onChange={e => { setChatEnabled(e.target.checked); persist({ chatIntelligence: e.target.checked }) }} /></span>
+                  <span className="flex items-center justify-between"><span className="metric-label">Chat Intelligence</span><input type="checkbox" checked={chatEnabled} onChange={e => { const value = e.target.checked; setChatEnabled(value); const cfg = { ...readBroadcastConfig(), chatIntelligence: value }; persist({ chatIntelligence: value }); void updateBroadcastConfig(cfg).then(setStatus).catch(err => setError(err.message)) }} /></span>
                   <span className="metric-sub">Queues questions for human approval.</span>
                 </label>
               </div>
@@ -123,7 +137,7 @@ export function BroadcastScreen() {
               <div className="card-warn p-4 flex gap-3">
                 <AlertCircle size={18} className="text-amber-400 shrink-0 mt-0.5" />
                 <div>
-                  <p className="text-xs font-semibold text-amber-300">Encoder connection is not configured</p>
+                  <p className="text-xs font-semibold text-amber-300">{status?.service === 'running' ? 'Encoder is running' : 'Encoder connection is not configured'}</p>
                   <p className="text-[11px] text-ink-secondary mt-1 leading-relaxed">
                     This control plane is intentionally separated from Twitch credentials. The production worker will hold the stream key and publish through an encoder such as FFmpeg/OBS.
                   </p>

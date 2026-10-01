@@ -1,0 +1,27 @@
+name: VitalOS broadcast worker checks
+
+on:
+  push:
+    branches: [main, production/vitalos-cloudflare, feature/vitalos-christian-broadcast]
+    paths:
+      - 'broadcast-worker/**'
+  pull_request:
+    branches: [main]
+    paths:
+      - 'broadcast-worker/**'
+
+permissions:
+  contents: read
+
+jobs:
+  worker:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Syntax check
+        run: node --check broadcast-worker/server.mjs
+      - name: Build container
+        run: docker build -t vitalos-broadcast-worker:ci broadcast-worker

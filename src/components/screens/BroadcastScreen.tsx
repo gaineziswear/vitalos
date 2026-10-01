@@ -183,12 +183,12 @@ export function BroadcastScreen() {
             <section className="card p-5">
               <h2 className="section-heading mb-4">Audience Economics</h2>
               <div className="grid grid-cols-2 gap-3">
-                <div className="metric-cell"><Users size={15} className="text-ink-muted" /><span className="metric-value text-base">{metrics.viewers}</span><span className="metric-sub">viewers</span></div>
-                <div className="metric-cell"><Heart size={15} className="text-ink-muted" /><span className="metric-value text-base">{running ? 12 : 0}</span><span className="metric-sub">interactions</span></div>
-                <div className="metric-cell"><Coins size={15} className="text-ink-muted" /><span className="metric-value text-base">{metrics.revenue}</span><span className="metric-sub">illustrative</span></div>
-                <div className="metric-cell"><TrendingUp size={15} className="text-ink-muted" /><span className="metric-value text-base">{running ? '+8.2%' : '—'}</span><span className="metric-sub">session trend</span></div>
+                <div className="metric-cell"><Users size={15} className="text-ink-muted" /><span className="metric-value text-base">—</span><span className="metric-sub">Twitch telemetry pending</span></div>
+                <div className="metric-cell"><Heart size={15} className="text-ink-muted" /><span className="metric-value text-base">—</span><span className="metric-sub">EventSub pending</span></div>
+                <div className="metric-cell"><Coins size={15} className="text-ink-muted" /><span className="metric-value text-base">—</span><span className="metric-sub">real revenue telemetry pending</span></div>
+                <div className="metric-cell"><TrendingUp size={15} className="text-ink-muted" /><span className="metric-value text-base">—</span><span className="metric-sub">session trend pending</span></div>
               </div>
-              <p className="text-[10px] text-ink-muted mt-4 leading-relaxed">Revenue figures in this first control-plane slice are placeholders, not Twitch earnings or ROI promises.</p>
+              <p className="text-[10px] text-ink-muted mt-4 leading-relaxed">Audience and revenue values remain unavailable until the Twitch telemetry layer is connected.</p>
             </section>
           </aside>
         </div>

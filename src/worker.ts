@@ -4,6 +4,7 @@ export interface Env {
   BROADCAST_CONTROL_TOKEN?: string
   SUPABASE_URL?: string
   SUPABASE_PUBLISHABLE_KEY?: string
+  SUPABASE_ANON_KEY?: string
 }
 
 const securityHeaders = {
@@ -32,11 +33,12 @@ function withSecurityHeaders(response: Response, extra: Record<string, string> =
 
 async function isAuthenticated(request: Request, env: Env) {
   const authorization = request.headers.get('Authorization')
-  if (!authorization?.startsWith('Bearer ') || !env.SUPABASE_URL || !env.SUPABASE_PUBLISHABLE_KEY) return false
+  const publishableKey = env.SUPABASE_PUBLISHABLE_KEY ?? env.SUPABASE_ANON_KEY
+  if (!authorization?.startsWith('Bearer ') || !env.SUPABASE_URL || !publishableKey) return false
 
   const response = await fetch(`${env.SUPABASE_URL.replace(/\\/$/, '')}/auth/v1/user`, {
     headers: {
-      apikey: env.SUPABASE_PUBLISHABLE_KEY,
+      apikey: publishableKey,
       Authorization: authorization,
     },
   })

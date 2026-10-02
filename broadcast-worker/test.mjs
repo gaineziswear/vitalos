@@ -10,6 +10,7 @@ const away = createProgramme({
   opportunityStatus: 'Test research',
   timestamp: '2026-10-02T00:00:00Z',
   source: 'test',
+  apologeticsIndex: 0,
 })
 
 assert.deepEqual(
@@ -18,6 +19,7 @@ assert.deepEqual(
 )
 assert.equal(away.length, 5)
 assert.equal(away[0].cards[0].value, 'Test market')
+assert.equal(away[1].cards[0].classification, 'CLAIM')
 assert.equal(away[2].cards[0].value, 'Test research')
 
 const live = createProgramme({
@@ -26,6 +28,14 @@ const live = createProgramme({
 }, {})
 assert.deepEqual(live.map(item => item.scene), ['opportunity'])
 assert.match(live[0].cards[1].value, /not a promise of return/i)
+
+const apologetics = createProgramme({
+  mode: 'live',
+  scene: 'apologetics',
+}, { apologeticsIndex: 1 })
+assert.deepEqual(apologetics.map(item => item.scene), ['apologetics'])
+assert.match(apologetics[0].cards[0].value, /bodily resurrection/i)
+assert.equal(apologetics[0].cards[2].source, 'Irenaeus, Against Heresies V.7')
 
 const args = encoderArgs(live[0])
 assert.ok(args.includes('-f'))

@@ -19,6 +19,7 @@ const state = {
 let ffmpeg = null
 let stopping = false
 let programmeTimer = null
+let programmeIndex = 0
 
 function update(patch) { Object.assign(state, patch, { updatedAt: new Date().toISOString() }) }
 function authorized(req) { return Boolean(CONTROL_TOKEN && req.headers.authorization === `Bearer ${CONTROL_TOKEN}`) }
@@ -36,6 +37,7 @@ function buildTarget() { return `${TWITCH_INGEST_URL.replace(/\\/$/, '')}/${TWIT
 function stopEncoder() {
   stopping = true
   if (programmeTimer) { clearTimeout(programmeTimer); programmeTimer = null }
+  programmeIndex = 0
   if (ffmpeg) {
     ffmpeg.kill('SIGTERM')
     setTimeout(() => { if (ffmpeg) ffmpeg.kill('SIGKILL') }, 5000).unref()
@@ -45,8 +47,24 @@ function stopEncoder() {
 
 function startProgramme(snapshot = {}) {
   if (!state.enabled || stopping || ffmpeg) return
-  const programme = createProgramme(state, snapshot)[0]
-  update({ currentProgramme: programme, programmeStartedAt: new Date().toISOString(), service: 'running', encoder: 'online' })
+
+  const programmes = createProgramme(state, snapshot)
+  if (!programmes.length) return
+
+  const index = state.mode === 'away'
+    ? programmeIndex % programmes.length
+    : 0
+  const programme = programmes[index]
+
+  if (state.mode === 'away') programmeIndex = (index + 1) % programmes.length
+  else programmeIndex = 0
+
+  update({
+    currentProgramme: programme,
+    programmeStartedAt: new Date().toISOString(),
+    service: 'running',
+    encoder: 'online',
+  })
   ffmpeg = spawn('ffmpeg', [...encoderArgs(programme), buildTarget()], { stdio: ['ignore', 'ignore', 'pipe'] })
   update({ pid: ffmpeg.pid ?? null })
   ffmpeg.stderr.on('data', data => console.log(`[ffmpeg] ${String(data).trim()}`))
@@ -56,9 +74,18 @@ function startProgramme(snapshot = {}) {
     update({ pid: null, encoder: 'offline', service: stopping ? 'stopped' : 'degraded', lastError: stopping ? null : `FFmpeg exited (code=${code}, signal=${signal ?? 'none'}).` })
     if (!stopping && state.enabled) {
       state.restartCount += 1
-      programmeTimer = setTimeout(() => { programmeTimer = null; startProgramme() }, 1000)
+      programmeTimer = setTimeout(() => {
+        programmeTimer = null
+        refreshAndStartProgramme()
+      }, 1000)
     }
   })
+}
+
+async function refreshAndStartProgramme() {
+  if (!state.enabled || stopping || ffmpeg) return
+  const snapshot = await fetchMarketSnapshot()
+  startProgramme(snapshot)
 }
 
 function startEncoder() {
@@ -69,7 +96,10 @@ function startEncoder() {
   }
   stopping = false
   update({ enabled: true, startedAt: state.startedAt ?? new Date().toISOString(), lastError: null })
-  fetchMarketSnapshot().then(startProgramme).catch(() => startProgramme())
+  refreshAndStartProgramme().catch(error => {
+    update({ service: 'degraded', lastError: error instanceof Error ? error.message : 'Failed to refresh market data.' })
+    startProgramme({})
+  })
 }
 
 async function handle(req, res) {
@@ -81,12 +111,15 @@ async function handle(req, res) {
 
   if (req.method === 'POST' && ['/start', '/config'].includes(url.pathname)) {
     const patch = await body(req)
+    const previousMode = state.mode
+    const previousScene = state.scene
     update({
       mode: patch.mode === 'live' ? 'live' : 'away',
       scene: ['market', 'stewardship', 'opportunity', 'community'].includes(patch.scene) ? patch.scene : state.scene,
       aiProducer: patch.aiProducer !== false,
       chatIntelligence: patch.chatIntelligence !== false,
     })
+    if (previousMode !== state.mode || previousScene !== state.scene) programmeIndex = 0
     if (url.pathname === '/start') startEncoder()
     return send(res, 200, state)
   }

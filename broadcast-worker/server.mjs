@@ -13,7 +13,7 @@ const state = {
   enabled: false, mode: 'away', scene: 'market', aiProducer: true, chatIntelligence: true,
   service: TWITCH_INGEST_URL && TWITCH_STREAM_KEY ? 'ready' : 'unconfigured',
   encoder: 'offline', pid: null, startedAt: null, lastError: null, restartCount: 0,
-  currentProgramme: null, programmeStartedAt: null, updatedAt: new Date().toISOString(),
+  currentProgramme: null, programmeStartedAt: null, lastMarketSnapshot: null, updatedAt: new Date().toISOString(),
 }
 
 let ffmpeg = null
@@ -32,7 +32,7 @@ async function body(req) {
   for await (const chunk of req) chunks.push(chunk)
   return chunks.length ? JSON.parse(Buffer.concat(chunks).toString('utf8')) : {}
 }
-function buildTarget() { return `${TWITCH_INGEST_URL.replace(/\\/$/, '')}/${TWITCH_STREAM_KEY}` }
+function buildTarget() { return `${TWITCH_INGEST_URL.replace(/\/$/, '')}/${TWITCH_STREAM_KEY}` }
 
 function stopEncoder() {
   stopping = true
@@ -61,6 +61,7 @@ function startProgramme(snapshot = {}) {
 
   update({
     currentProgramme: programme,
+    lastMarketSnapshot: snapshot,
     programmeStartedAt: new Date().toISOString(),
     service: 'running',
     encoder: 'online',
@@ -108,6 +109,7 @@ async function handle(req, res) {
   if (req.method === 'GET' && url.pathname === '/health')
     return send(res, 200, { status: 'ok', service: 'vitalos-broadcast-worker', timestamp: new Date().toISOString() })
   if (req.method === 'GET' && url.pathname === '/status') return send(res, 200, state)
+  if (req.method === 'GET' && url.pathname === '/programme') return send(res, 200, { programme: state.currentProgramme, snapshot: state.lastMarketSnapshot })
 
   if (req.method === 'POST' && ['/start', '/config'].includes(url.pathname)) {
     const patch = await body(req)

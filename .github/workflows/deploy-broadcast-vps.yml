@@ -1,0 +1,44 @@
+name: Deploy VITALOS Broadcast Worker to VPS
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [feature/vitalos-christian-broadcast, main]
+    paths: ['broadcast-worker/**']
+
+permissions:
+  contents: read
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - run: |
+          node --check broadcast-worker/server.mjs
+          node --check broadcast-worker/programme.mjs
+          node --check broadcast-worker/renderer.mjs
+          node --check broadcast-worker/market-data.mjs
+          node broadcast-worker/test.mjs
+      - name: Sync and restart VPS worker
+        uses: appleboy/ssh-action@v1.2.2
+        with:
+          host: ${{ secrets.VITALOS_VPS_HOST }}
+          username: ${{ secrets.VITALOS_VPS_USER }}
+          key: ${{ secrets.VITALOS_VPS_SSH_KEY }}
+          script: |
+            set -e
+            if [ ! -d /opt/vitalos ]; then
+              git clone ${{ github.server_url }}/${{ github.repository }} /opt/vitalos
+            fi
+            cd /opt/vitalos
+            git fetch origin
+            git checkout ${{ github.ref_name }}
+            git reset --hard origin/${{ github.ref_name }}
+            cd broadcast-worker
+            docker compose build --pull
+            docker compose up -d --remove-orphans
+            curl --fail --silent --show-error http://127.0.0.1:8788/health

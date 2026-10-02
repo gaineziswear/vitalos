@@ -20,7 +20,7 @@ assert.deepEqual(
 assert.equal(away.length, 5)
 assert.equal(away[0].cards[0].value, 'Test market')
 assert.equal(away[1].cards[0].classification, 'CLAIM')
-assert.equal(away[2].cards[0].value, 'Test research')
+assert.equal(away[3].cards[0].value, 'Test research')
 
 const live = createProgramme({
   mode: 'live',

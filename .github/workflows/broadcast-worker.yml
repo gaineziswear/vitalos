@@ -24,8 +24,10 @@ jobs:
       - name: Syntax check
         run: |
           node --check broadcast-worker/server.mjs
-          node --check broadcast-worker/scene-composer.mjs
+          node --check broadcast-worker/programme.mjs
+          node --check broadcast-worker/renderer.mjs
+          node --check broadcast-worker/market-data.mjs
       - name: Unit tests
-        run: node broadcast-worker/scene-composer.test.mjs
+        run: node broadcast-worker/test.mjs
       - name: Build container
         run: docker build -t vitalos-broadcast-worker:ci broadcast-worker

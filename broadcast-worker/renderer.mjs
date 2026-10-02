@@ -1,15 +1,30 @@
-import { createProgramme } from './programme.mjs'
+function escapeDrawtext(value) {
+  return String(value ?? '')
+    .replace(/\\/g, '\\\\')
+    .replace(/'/g, "\\\\'")
+    .replace(/:/g, '\\\\:')
+    .replace(/%/g, '\\\\%')
+    .replace(/,/g, '\\\\,')
+    .slice(0, 220)
+}
 
 export function renderFilterGraph(programme) {
-  const title = programme.title.replace(/[:'"]/g, '')
-  const label = programme.label.replace(/[:'"]/g, '')
-  const narration = programme.narration.replace(/[:'"]/g, '').slice(0, 180)
+  const title = escapeDrawtext(programme.title)
+  const label = escapeDrawtext(programme.label)
+  const narration = escapeDrawtext(programme.narration)
+  const cards = (programme.cards ?? []).slice(0, 3)
+    .map(card => `${card.title}: ${card.value}`)
+    .join(' | ')
+  const cardText = escapeDrawtext(cards)
   return [
-    'drawbox=x=0:y=0:w=iw:h=ih:color=black@0.12:t=fill',
-    `drawtext=text='VITALOS':x=48:y=42:fontsize=34:fontcolor=white`,
-    `drawtext=text='${title}':x=48:y=150:fontsize=46:fontcolor=white`,
-    `drawtext=text='${label}':x=48:y=220:fontsize=28:fontcolor=white`,
-    `drawtext=text='${narration}':x=48:y=h-150:fontsize=24:fontcolor=white:box=1:boxcolor=black@0.55:boxborderw=18`,
+    'drawbox=x=0:y=0:w=iw:h=ih:color=0x07111f@1:t=fill',
+    'drawbox=x=36:y=28:w=1208:h=664:color=0xd4af37@0.22:t=2',
+    `drawtext=text='VITALOS':x=48:y=42:fontsize=34:fontcolor=0xd4af37`,
+    `drawtext=text='${title}':x=48:y=125:fontsize=42:fontcolor=white`,
+    `drawtext=text='${label}':x=48:y=190:fontsize=24:fontcolor=0xd4af37`,
+    `drawtext=text='${cardText}':x=48:y=270:fontsize=21:fontcolor=white:box=1:boxcolor=black@0.35:boxborderw=16`,
+    `drawtext=text='${narration}':x=48:y=h-155:fontsize=22:fontcolor=white:box=1:boxcolor=black@0.65:boxborderw=18`,
+    `drawtext=text='EVIDENCE FIRST | ATTACK CLAIMS, NOT PEOPLE':x=48:y=h-48:fontsize=16:fontcolor=0xd4af37`,
     'format=yuv420p',
   ].join(',')
 }

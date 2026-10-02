@@ -1,0 +1,21 @@
+services:
+  vitalos-broadcast:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: vitalos-broadcast
+    restart: unless-stopped
+    init: true
+    env_file: [.env]
+    ports: ["127.0.0.1:8788:8788"]
+    healthcheck:
+      test: ["CMD", "node", "-e", "fetch('http://127.0.0.1:8788/health').then(r=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 10s
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "5"

@@ -20,6 +20,7 @@ let ffmpeg = null
 let stopping = false
 let programmeTimer = null
 let programmeIndex = 0
+let apologeticsIndex = 0
 
 function update(patch) { Object.assign(state, patch, { updatedAt: new Date().toISOString() }) }
 function authorized(req) { return Boolean(CONTROL_TOKEN && req.headers.authorization === `Bearer ${CONTROL_TOKEN}`) }
@@ -86,6 +87,7 @@ function startProgramme(snapshot = {}) {
 async function refreshAndStartProgramme() {
   if (!state.enabled || stopping || ffmpeg) return
   const snapshot = await fetchMarketSnapshot()
+  if (state.mode === 'away') snapshot.apologeticsIndex = apologeticsIndex++
   startProgramme(snapshot)
 }
 
@@ -104,10 +106,11 @@ function startEncoder() {
 }
 
 async function handle(req, res) {
-  if (!authorized(req)) return send(res, 401, { error: 'Unauthorized.' })
   const url = new URL(req.url, `http://127.0.0.1:${PORT}`)
   if (req.method === 'GET' && url.pathname === '/health')
     return send(res, 200, { status: 'ok', service: 'vitalos-broadcast-worker', timestamp: new Date().toISOString() })
+
+  if (!authorized(req)) return send(res, 401, { error: 'Unauthorized.' })
   if (req.method === 'GET' && url.pathname === '/status') return send(res, 200, state)
   if (req.method === 'GET' && url.pathname === '/programme') return send(res, 200, { programme: state.currentProgramme, snapshot: state.lastMarketSnapshot })
 
@@ -117,7 +120,7 @@ async function handle(req, res) {
     const previousScene = state.scene
     update({
       mode: patch.mode === 'live' ? 'live' : 'away',
-      scene: ['market', 'stewardship', 'opportunity', 'community'].includes(patch.scene) ? patch.scene : state.scene,
+      scene: ['market', 'stewardship', 'opportunity', 'community', 'apologetics'].includes(patch.scene) ? patch.scene : state.scene,
       aiProducer: patch.aiProducer !== false,
       chatIntelligence: patch.chatIntelligence !== false,
     })

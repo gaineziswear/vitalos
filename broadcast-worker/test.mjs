@@ -14,9 +14,9 @@ const away = createProgramme({
 
 assert.deepEqual(
   away.map(item => item.scene),
-  ['market', 'stewardship', 'opportunity', 'community'],
+  ['market', 'apologetics', 'stewardship', 'opportunity', 'community'],
 )
-assert.equal(away.length, 4)
+assert.equal(away.length, 5)
 assert.equal(away[0].cards[0].value, 'Test market')
 assert.equal(away[2].cards[0].value, 'Test research')
 

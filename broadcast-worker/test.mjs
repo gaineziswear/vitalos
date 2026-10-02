@@ -35,7 +35,7 @@ const apologetics = createProgramme({
 }, { apologeticsIndex: 1 })
 assert.deepEqual(apologetics.map(item => item.scene), ['apologetics'])
 assert.match(apologetics[0].cards[0].value, /bodily resurrection/i)
-assert.equal(apologetics[0].cards[2].source, 'Irenaeus, Against Heresies V.7')
+assert.equal(apologetics[0].cards[2].value, 'Irenaeus, Against Heresies V.7')
 
 const args = encoderArgs(live[0])
 assert.ok(args.includes('-f'))
